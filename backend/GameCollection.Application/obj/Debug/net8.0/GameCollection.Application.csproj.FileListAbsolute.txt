@@ -1,0 +1,15 @@
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\GameCollection.Application.csproj.AssemblyReference.cache
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\GameCollection.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\GameCollection.Application.AssemblyInfoInputs.cache
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\GameCollection.Application.AssemblyInfo.cs
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\GameCollection.Application.csproj.CoreCompileInputs.cache
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\bin\Debug\net8.0\GameCollection.Application.deps.json
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\bin\Debug\net8.0\GameCollection.Application.dll
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\bin\Debug\net8.0\GameCollection.Application.pdb
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\bin\Debug\net8.0\GameCollection.Domain.dll
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\bin\Debug\net8.0\GameCollection.Domain.pdb
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\GameColl.9A72092E.Up2Date
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\GameCollection.Application.dll
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\refint\GameCollection.Application.dll
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\GameCollection.Application.pdb
+C:\Users\moeez\OneDrive\Documents\Antigravity\backend\GameCollection.Application\obj\Debug\net8.0\ref\GameCollection.Application.dll

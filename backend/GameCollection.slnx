@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="GameCollection.API/GameCollection.API.csproj" />
+  <Project Path="GameCollection.Application/GameCollection.Application.csproj" />
+  <Project Path="GameCollection.Domain/GameCollection.Domain.csproj" />
+  <Project Path="GameCollection.Infrastructure/GameCollection.Infrastructure.csproj" />
+</Solution>

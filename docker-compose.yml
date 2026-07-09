@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: gamecollection-db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SuperSecurePassword123!
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+
+  backend-api:
+    image: gamecollection-api
+    build:
+      context: ./backend
+      dockerfile: GameCollection.API/Dockerfile
+    container_name: gamecollection-backend
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=database;Database=GameCollectionDb;User Id=sa;Password=SuperSecurePassword123!;TrustServerCertificate=True;MultipleActiveResultSets=true
+      - JwtSettings__Secret=SuperSecretKeyForGameCollectionManagementAppKeyHere_1234567890!
+      - JwtSettings__Issuer=GameCollectionAPI
+      - JwtSettings__Audience=GameCollectionApp
+      - JwtSettings__DurationInMinutes=1440
+    depends_on:
+      - database
+    volumes:
+      - backend-uploads:/app/wwwroot/uploads
+
+  frontend-app:
+    image: gamecollection-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gamecollection-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-api
+
+volumes:
+  mssql-data:
+  backend-uploads:
