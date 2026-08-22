@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Projects\\GameGrid\\backend\\GameCollection.API\\GameCollection.API.csproj": {}
+    "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.API\\GameCollection.API.csproj": {}
   },
   "projects": {
-    "C:\\Projects\\GameGrid\\backend\\GameCollection.API\\GameCollection.API.csproj": {
+    "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.API\\GameCollection.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Projects\\GameGrid\\backend\\GameCollection.API\\GameCollection.API.csproj",
+        "projectUniqueName": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.API\\GameCollection.API.csproj",
         "projectName": "GameCollection.API",
-        "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.API\\GameCollection.API.csproj",
+        "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.API\\GameCollection.API.csproj",
         "packagesPath": "C:\\Users\\moeez\\.nuget\\packages\\",
-        "outputPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.API\\obj\\",
+        "outputPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -33,11 +33,11 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\GameCollection.Application.csproj": {
-                "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\GameCollection.Application.csproj"
+              "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\GameCollection.Application.csproj": {
+                "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\GameCollection.Application.csproj"
               },
-              "C:\\Projects\\GameGrid\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj": {
-                "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj"
+              "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj": {
+                "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj"
               }
             }
           }
@@ -52,7 +52,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net8.0": {
@@ -97,18 +97,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\GameCollection.Application.csproj": {
+    "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\GameCollection.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\GameCollection.Application.csproj",
+        "projectUniqueName": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\GameCollection.Application.csproj",
         "projectName": "GameCollection.Application",
-        "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\GameCollection.Application.csproj",
+        "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\GameCollection.Application.csproj",
         "packagesPath": "C:\\Users\\moeez\\.nuget\\packages\\",
-        "outputPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\obj\\",
+        "outputPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -130,8 +130,8 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Projects\\GameGrid\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj": {
-                "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj"
+              "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj": {
+                "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj"
               }
             }
           }
@@ -146,7 +146,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net8.0": {
@@ -186,18 +186,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Projects\\GameGrid\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj": {
+    "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Projects\\GameGrid\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj",
         "projectName": "GameCollection.Domain",
-        "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj",
+        "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj",
         "packagesPath": "C:\\Users\\moeez\\.nuget\\packages\\",
-        "outputPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Domain\\obj\\",
+        "outputPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -231,7 +231,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net8.0": {
@@ -253,18 +253,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Projects\\GameGrid\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj": {
+    "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Projects\\GameGrid\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj",
         "projectName": "GameCollection.Infrastructure",
-        "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj",
+        "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Infrastructure\\GameCollection.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\moeez\\.nuget\\packages\\",
-        "outputPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Infrastructure\\obj\\",
+        "outputPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -286,8 +286,8 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\GameCollection.Application.csproj": {
-                "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\GameCollection.Application.csproj"
+              "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\GameCollection.Application.csproj": {
+                "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\GameCollection.Application.csproj"
               }
             }
           }
@@ -302,7 +302,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net8.0": {
@@ -344,7 +344,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

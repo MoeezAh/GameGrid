@@ -1,0 +1,80 @@
+# ==========================================
+# .NET / C# / Visual Studio
+# ==========================================
+**/[Bb]in/
+**/[Oo]bj/
+**/[Dd]ebug/
+**/[Rr]elease/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+*.dbmdl
+*.jfm
+
+# Visual Studio & JetBrains Rider
+.vs/
+.idea/
+*.DotSettings.user
+_ReSharper*/
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Test Results & Code Coverage
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.opencover.xml
+coverage*.json
+coverage*.xml
+
+# ==========================================
+# Node / React / Vite Frontend
+# ==========================================
+**/node_modules/
+**/dist/
+**/dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment & Local Configuration
+.env.local
+.env.*.local
+*.local
+appsettings.Production.json
+
+# ==========================================
+# Databases & Local Data
+# ==========================================
+*.mdf
+*.ldf
+*.ndf
+*.sqlite
+*.sqlite3
+*.db
+
+# ==========================================
+# User Uploads & Media Assets (Runtime)
+# ==========================================
+**/wwwroot/uploads/*
+!**/wwwroot/uploads/.gitkeep
+
+# ==========================================
+# OS & System Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini

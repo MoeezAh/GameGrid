@@ -82,11 +82,11 @@
           }
         }
       },
-      "Microsoft.EntityFrameworkCore/8.0.28": {
+      "Microsoft.EntityFrameworkCore/8.0.30": {
         "type": "package",
         "dependencies": {
-          "Microsoft.EntityFrameworkCore.Abstractions": "8.0.28",
-          "Microsoft.EntityFrameworkCore.Analyzers": "8.0.28",
+          "Microsoft.EntityFrameworkCore.Abstractions": "8.0.30",
+          "Microsoft.EntityFrameworkCore.Analyzers": "8.0.30",
           "Microsoft.Extensions.Caching.Memory": "8.0.1",
           "Microsoft.Extensions.Logging": "8.0.1"
         },
@@ -104,7 +104,7 @@
           "buildTransitive/net8.0/Microsoft.EntityFrameworkCore.props": {}
         }
       },
-      "Microsoft.EntityFrameworkCore.Abstractions/8.0.28": {
+      "Microsoft.EntityFrameworkCore.Abstractions/8.0.30": {
         "type": "package",
         "compile": {
           "lib/net8.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
@@ -117,7 +117,7 @@
           }
         }
       },
-      "Microsoft.EntityFrameworkCore.Analyzers/8.0.28": {
+      "Microsoft.EntityFrameworkCore.Analyzers/8.0.30": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/_._": {}
@@ -463,10 +463,10 @@
         "mediatr.contracts.nuspec"
       ]
     },
-    "Microsoft.EntityFrameworkCore/8.0.28": {
-      "sha512": "rC28OvTXi/6+C8cisqZ/dr69aP8d0suvkFkGu2dBHa4UFwPZVt9cqni4pYwp9Hd3CuJ+NRDCn7YtwSexoBn/Hw==",
+    "Microsoft.EntityFrameworkCore/8.0.30": {
+      "sha512": "Y6GP16iuqAUkcXSgMqjgao9w0UHSz8x04LRDadsi++sn7yBI9C/sy61xNLzPKM+6DZEbyPRHGq3M58f6DhB25g==",
       "type": "package",
-      "path": "microsoft.entityframeworkcore/8.0.28",
+      "path": "microsoft.entityframeworkcore/8.0.30",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -475,14 +475,14 @@
         "buildTransitive/net8.0/Microsoft.EntityFrameworkCore.props",
         "lib/net8.0/Microsoft.EntityFrameworkCore.dll",
         "lib/net8.0/Microsoft.EntityFrameworkCore.xml",
-        "microsoft.entityframeworkcore.8.0.28.nupkg.sha512",
+        "microsoft.entityframeworkcore.8.0.30.nupkg.sha512",
         "microsoft.entityframeworkcore.nuspec"
       ]
     },
-    "Microsoft.EntityFrameworkCore.Abstractions/8.0.28": {
-      "sha512": "hz/S8QO8W6J1fhaYca+HU9SV9ITJ3X2qNuP12ShSfWkp+0rSQSrkBuDFATRONTTqUOvvg8T7XLnylzKjBWPLTQ==",
+    "Microsoft.EntityFrameworkCore.Abstractions/8.0.30": {
+      "sha512": "JoVu3708PrMcA3BUeo1+gTcD4nRI8o3g3kwNXwgTPUDhe0dqN2CQmHmEPDD0uZlI1v2oq3F7tR46VycUHzP9ng==",
       "type": "package",
-      "path": "microsoft.entityframeworkcore.abstractions/8.0.28",
+      "path": "microsoft.entityframeworkcore.abstractions/8.0.30",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -490,14 +490,14 @@
         "PACKAGE.md",
         "lib/net8.0/Microsoft.EntityFrameworkCore.Abstractions.dll",
         "lib/net8.0/Microsoft.EntityFrameworkCore.Abstractions.xml",
-        "microsoft.entityframeworkcore.abstractions.8.0.28.nupkg.sha512",
+        "microsoft.entityframeworkcore.abstractions.8.0.30.nupkg.sha512",
         "microsoft.entityframeworkcore.abstractions.nuspec"
       ]
     },
-    "Microsoft.EntityFrameworkCore.Analyzers/8.0.28": {
-      "sha512": "OVp8TMfKp1ZNSLXeyZOlEITzHkQzJ9XDx0Mbf7bRfUE46mLRFsxBJEFxqTQieIu18Sg7sP0tX9K+PxvyVC8aqA==",
+    "Microsoft.EntityFrameworkCore.Analyzers/8.0.30": {
+      "sha512": "+ZVRBR3CzGu0AGWTbewOWTzV+UG//yDrA0gdvb9i1dTidSvwG9qRRggEI9fie0MPC0LAcS9Z8X5HRYWWxefutg==",
       "type": "package",
-      "path": "microsoft.entityframeworkcore.analyzers/8.0.28",
+      "path": "microsoft.entityframeworkcore.analyzers/8.0.30",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -505,7 +505,7 @@
         "analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll",
         "docs/PACKAGE.md",
         "lib/netstandard2.0/_._",
-        "microsoft.entityframeworkcore.analyzers.8.0.28.nupkg.sha512",
+        "microsoft.entityframeworkcore.analyzers.8.0.30.nupkg.sha512",
         "microsoft.entityframeworkcore.analyzers.nuspec"
       ]
     },
@@ -957,11 +957,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\GameCollection.Application.csproj",
+      "projectUniqueName": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\GameCollection.Application.csproj",
       "projectName": "GameCollection.Application",
-      "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\GameCollection.Application.csproj",
+      "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\GameCollection.Application.csproj",
       "packagesPath": "C:\\Users\\moeez\\.nuget\\packages\\",
-      "outputPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Application\\obj\\",
+      "outputPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Application\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -983,8 +983,8 @@
           "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Projects\\GameGrid\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj": {
-              "projectPath": "C:\\Projects\\GameGrid\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj"
+            "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj": {
+              "projectPath": "C:\\Users\\moeez\\OneDrive\\Documents\\Antigravity\\backend\\GameCollection.Domain\\GameCollection.Domain.csproj"
             }
           }
         }
@@ -999,7 +999,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.300"
+      "SdkAnalysisLevel": "10.0.400"
     },
     "frameworks": {
       "net8.0": {
@@ -1039,7 +1039,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
