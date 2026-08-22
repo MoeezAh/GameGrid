@@ -12,7 +12,7 @@
           "FluentValidation.DependencyInjectionExtensions": "12.1.1",
           "GameCollection.Domain": "1.0.0",
           "MediatR": "14.1.0",
-          "Microsoft.EntityFrameworkCore": "8.0.28"
+          "Microsoft.EntityFrameworkCore": "8.0.30"
         },
         "runtime": {
           "GameCollection.Application.dll": {}
@@ -73,24 +73,24 @@
           }
         }
       },
-      "Microsoft.EntityFrameworkCore/8.0.28": {
+      "Microsoft.EntityFrameworkCore/8.0.30": {
         "dependencies": {
-          "Microsoft.EntityFrameworkCore.Abstractions": "8.0.28",
+          "Microsoft.EntityFrameworkCore.Abstractions": "8.0.30",
           "Microsoft.Extensions.Caching.Memory": "8.0.1",
           "Microsoft.Extensions.Logging": "8.0.1"
         },
         "runtime": {
           "lib/net8.0/Microsoft.EntityFrameworkCore.dll": {
-            "assemblyVersion": "8.0.28.0",
-            "fileVersion": "8.0.2826.26502"
+            "assemblyVersion": "8.0.30.0",
+            "fileVersion": "8.0.3026.37002"
           }
         }
       },
-      "Microsoft.EntityFrameworkCore.Abstractions/8.0.28": {
+      "Microsoft.EntityFrameworkCore.Abstractions/8.0.30": {
         "runtime": {
           "lib/net8.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
-            "assemblyVersion": "8.0.28.0",
-            "fileVersion": "8.0.2826.26502"
+            "assemblyVersion": "8.0.30.0",
+            "fileVersion": "8.0.3026.37002"
           }
         }
       },
@@ -285,19 +285,19 @@
       "path": "mediatr.contracts/2.0.1",
       "hashPath": "mediatr.contracts.2.0.1.nupkg.sha512"
     },
-    "Microsoft.EntityFrameworkCore/8.0.28": {
+    "Microsoft.EntityFrameworkCore/8.0.30": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-rC28OvTXi/6+C8cisqZ/dr69aP8d0suvkFkGu2dBHa4UFwPZVt9cqni4pYwp9Hd3CuJ+NRDCn7YtwSexoBn/Hw==",
-      "path": "microsoft.entityframeworkcore/8.0.28",
-      "hashPath": "microsoft.entityframeworkcore.8.0.28.nupkg.sha512"
+      "sha512": "sha512-Y6GP16iuqAUkcXSgMqjgao9w0UHSz8x04LRDadsi++sn7yBI9C/sy61xNLzPKM+6DZEbyPRHGq3M58f6DhB25g==",
+      "path": "microsoft.entityframeworkcore/8.0.30",
+      "hashPath": "microsoft.entityframeworkcore.8.0.30.nupkg.sha512"
     },
-    "Microsoft.EntityFrameworkCore.Abstractions/8.0.28": {
+    "Microsoft.EntityFrameworkCore.Abstractions/8.0.30": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-hz/S8QO8W6J1fhaYca+HU9SV9ITJ3X2qNuP12ShSfWkp+0rSQSrkBuDFATRONTTqUOvvg8T7XLnylzKjBWPLTQ==",
-      "path": "microsoft.entityframeworkcore.abstractions/8.0.28",
-      "hashPath": "microsoft.entityframeworkcore.abstractions.8.0.28.nupkg.sha512"
+      "sha512": "sha512-JoVu3708PrMcA3BUeo1+gTcD4nRI8o3g3kwNXwgTPUDhe0dqN2CQmHmEPDD0uZlI1v2oq3F7tR46VycUHzP9ng==",
+      "path": "microsoft.entityframeworkcore.abstractions/8.0.30",
+      "hashPath": "microsoft.entityframeworkcore.abstractions.8.0.30.nupkg.sha512"
     },
     "Microsoft.Extensions.Caching.Abstractions/8.0.0": {
       "type": "package",
