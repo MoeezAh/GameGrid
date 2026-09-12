@@ -7,7 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using GameCollection.Application.Common.Interfaces;
 using GameCollection.Application.DTOs.Auth;
+using GameCollection.Domain.Entities;
+using GameCollection.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,15 +21,21 @@ public class IdentityService : IIdentityService
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
+    private readonly GameDbContext _context;
+    private readonly IPermissionService _permissionService;
 
     public IdentityService(
         UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        GameDbContext context,
+        IPermissionService permissionService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _configuration = configuration;
+        _context = context;
+        _permissionService = permissionService;
     }
 
     public async Task<(bool Succeeded, AuthResponse? Response, string[] Errors)> RegisterAsync(RegisterRequest request)
@@ -50,24 +59,44 @@ public class IdentityService : IIdentityService
             return (false, null, result.Errors.Select(e => e.Description).ToArray());
         }
 
-        // Check if role "User" exists, if not create it
+        // Assign default application role "User"
+        var defaultRole = await _context.ApplicationRoles
+            .FirstOrDefaultAsync(r => r.Name.ToLower() == "user" && !r.IsDeleted);
+
+        if (defaultRole != null)
+        {
+            await _context.ApplicationUserRoles.AddAsync(new ApplicationUserRole
+            {
+                UserId = user.Id,
+                RoleId = defaultRole.Id
+            });
+            await _context.SaveChangesAsync();
+        }
+
+        // Also assign Identity role for compatibility
         if (!await _roleManager.RoleExistsAsync("User"))
         {
             await _roleManager.CreateAsync(new IdentityRole("User"));
         }
-
-        // Assign default role "User"
         await _userManager.AddToRoleAsync(user, "User");
 
+        var roles = await _permissionService.GetUserRoleNamesAsync(user.Id);
+        if (!roles.Any()) roles = new List<string> { "User" };
+
+        var permissions = await _permissionService.GetUserPermissionsAsync(user.Id);
+        var isSuperAdmin = await _permissionService.IsSuperAdminAsync(user.Id);
+
         // Generate Token
-        var token = await GenerateJwtTokenAsync(user);
+        var token = await GenerateJwtTokenAsync(user, roles, isSuperAdmin);
 
         return (true, new AuthResponse
         {
             Token = token,
             Username = user.UserName!,
             Email = user.Email!,
-            Roles = new List<string> { "User" }
+            IsSuperAdmin = isSuperAdmin,
+            Roles = roles,
+            Permissions = permissions.ToList()
         }, Array.Empty<string>());
     }
 
@@ -85,15 +114,26 @@ public class IdentityService : IIdentityService
             return (false, null, new[] { "Invalid username/email or password." });
         }
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var token = await GenerateJwtTokenAsync(user);
+        var roles = await _permissionService.GetUserRoleNamesAsync(user.Id);
+        if (!roles.Any())
+        {
+            var identityRoles = await _userManager.GetRolesAsync(user);
+            roles = identityRoles.ToList();
+        }
+
+        var permissions = await _permissionService.GetUserPermissionsAsync(user.Id);
+        var isSuperAdmin = await _permissionService.IsSuperAdminAsync(user.Id);
+
+        var token = await GenerateJwtTokenAsync(user, roles, isSuperAdmin);
 
         return (true, new AuthResponse
         {
             Token = token,
             Username = user.UserName!,
             Email = user.Email!,
-            Roles = roles.ToList()
+            IsSuperAdmin = isSuperAdmin,
+            Roles = roles,
+            Permissions = permissions.ToList()
         }, Array.Empty<string>());
     }
 
@@ -102,13 +142,23 @@ public class IdentityService : IIdentityService
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return null;
 
-        var roles = await _userManager.GetRolesAsync(user);
+        var roles = await _permissionService.GetUserRoleNamesAsync(user.Id);
+        if (!roles.Any())
+        {
+            var identityRoles = await _userManager.GetRolesAsync(user);
+            roles = identityRoles.ToList();
+        }
+
+        var permissions = await _permissionService.GetUserPermissionsAsync(user.Id);
+        var isSuperAdmin = await _permissionService.IsSuperAdminAsync(user.Id);
 
         return new UserProfileDto
         {
             Username = user.UserName!,
             Email = user.Email!,
-            Roles = roles.ToList()
+            IsSuperAdmin = isSuperAdmin,
+            Roles = roles,
+            Permissions = permissions.ToList()
         };
     }
 
@@ -162,8 +212,6 @@ public class IdentityService : IIdentityService
             return (false, new[] { "User not found." });
         }
 
-        // In a real application, password reset involves token validation sent via email.
-        // For a local development/personal project, we will reset it directly for the user's convenience.
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var result = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);
 
@@ -175,21 +223,20 @@ public class IdentityService : IIdentityService
         return (true, Array.Empty<string>());
     }
 
-    private async Task<string> GenerateJwtTokenAsync(IdentityUser user)
+    private Task<string> GenerateJwtTokenAsync(IdentityUser user, List<string> roles, bool isSuperAdmin)
     {
         var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"] ?? "SuperSecretKeyForGameCollectionManagementAppKeyHere_1234567890!");
         var issuer = _configuration["JwtSettings:Issuer"] ?? "GameCollectionAPI";
         var audience = _configuration["JwtSettings:Audience"] ?? "GameCollectionApp";
         var durationMinutes = Convert.ToInt32(_configuration["JwtSettings:DurationInMinutes"] ?? "1440");
 
-        var roles = await _userManager.GetRolesAsync(user);
-
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.UniqueName, user.UserName!),
             new(JwtRegisteredClaimNames.Email, user.Email!),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new("isSuperAdmin", isSuperAdmin.ToString().ToLower())
         };
 
         foreach (var role in roles)
@@ -209,6 +256,6 @@ public class IdentityService : IIdentityService
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        return tokenHandler.WriteToken(token);
+        return Task.FromResult(tokenHandler.WriteToken(token));
     }
 }

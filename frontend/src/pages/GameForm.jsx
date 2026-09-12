@@ -2,16 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api, { API_HOST } from '../services/api';
 
-const CompletionStatuses = [
-  { value: 0, label: 'Not Started' },
-  { value: 1, label: 'Playing' },
-  { value: 2, label: 'On Hold' },
-  { value: 3, label: 'Completed' },
-  { value: 4, label: 'Dropped' },
-  { value: 5, label: '100% Completed' },
-  { value: 6, label: 'Replaying' }
-];
-
 const GameForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -22,7 +12,7 @@ const GameForm = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Dropdown lists
+  // Dropdown / Checklist lookups
   const [lookups, setLookups] = useState({
     platforms: [],
     services: [],
@@ -35,44 +25,35 @@ const GameForm = () => {
     series: []
   });
 
-  // Main Form State
+  // Central Catalog Form State
   const [form, setForm] = useState({
     title: '',
     alternateTitles: '',
     originalTitle: '',
     description: '',
     notes: '',
-    personalNotes: '',
-
-    ownGame: false,
-    wishlist: false,
-    backlog: false,
-    physicalCopy: false,
-    digitalCopy: false,
-    collectorsEdition: false,
-    specialEdition: false,
-
-    purchaseDate: '',
-    purchasePrice: '',
-    currency: 'USD',
-    storePurchasedFrom: '',
-    purchaseRegion: '',
-    receiptReference: '',
-    gifted: false,
-
-    startedPlayingDate: '',
-    completedDate: '',
-    lastPlayedDate: '',
-    hoursPlayed: 0,
-    completionStatus: 0,
-
-    personalRating: '',
-    communityRating: '',
-    criticRating: '',
 
     releaseDate: '',
     originalReleaseDate: '',
     earlyAccessDate: '',
+
+    communityRating: '',
+    criticRating: '',
+    metacriticScore: '',
+    openCriticScore: '',
+    esrbRating: '',
+    pegiRating: '',
+    steamDeckCompatibility: 'Unknown',
+
+    multiplayerSupport: false,
+    coopSupport: false,
+    vrSupport: false,
+    crossplaySupport: false,
+    cloudSaveSupport: false,
+    controllerSupport: false,
+    achievementCount: 0,
+    dlcCount: 0,
+    expansionCount: 0,
 
     coverImage: '',
     boxArt: '',
@@ -84,21 +65,6 @@ const GameForm = () => {
     trailerUrl: '',
     gameplayUrl: '',
     youtubeLinks: '',
-
-    esrbRating: '',
-    pegiRating: '',
-    metacriticScore: '',
-    openCriticScore: '',
-    multiplayerSupport: false,
-    coopSupport: false,
-    vrSupport: false,
-    crossplaySupport: false,
-    cloudSaveSupport: false,
-    controllerSupport: false,
-    steamDeckCompatibility: 'Unknown',
-    achievementCount: 0,
-    dlcCount: 0,
-    expansionCount: 0,
 
     franchiseId: '',
     seriesId: '',
@@ -112,7 +78,7 @@ const GameForm = () => {
     serviceIds: []
   });
 
-  // Load all select lists
+  // Load all metadata lookups
   const fetchLookups = async () => {
     try {
       const keys = ['platforms', 'services', 'developers', 'publishers', 'genres', 'tags', 'themes', 'franchises', 'series'];
@@ -136,24 +102,17 @@ const GameForm = () => {
       const response = await api.get(`/games/${id}`);
       const data = response.data;
       
-      // Map to form structure
       setForm({
         ...data,
-        purchaseDate: data.purchaseDate ? data.purchaseDate.substring(0, 10) : '',
-        startedPlayingDate: data.startedPlayingDate ? data.startedPlayingDate.substring(0, 10) : '',
-        completedDate: data.completedDate ? data.completedDate.substring(0, 10) : '',
-        lastPlayedDate: data.lastPlayedDate ? data.lastPlayedDate.substring(0, 10) : '',
         releaseDate: data.releaseDate ? data.releaseDate.substring(0, 10) : '',
         originalReleaseDate: data.originalReleaseDate ? data.originalReleaseDate.substring(0, 10) : '',
         earlyAccessDate: data.earlyAccessDate ? data.earlyAccessDate.substring(0, 10) : '',
-        purchasePrice: data.purchasePrice || '',
-        personalRating: data.personalRating || '',
-        communityRating: data.communityRating || '',
-        criticRating: data.criticRating || '',
-        metacriticScore: data.metacriticScore || '',
-        openCriticScore: data.openCriticScore || '',
-        franchiseId: data.franchiseId || '',
-        seriesId: data.seriesId || '',
+        communityRating: data.communityRating ?? '',
+        criticRating: data.criticRating ?? '',
+        metacriticScore: data.metacriticScore ?? '',
+        openCriticScore: data.openCriticScore ?? '',
+        franchiseId: data.franchiseId ?? '',
+        seriesId: data.seriesId ?? '',
         developerIds: data.developers?.map(d => d.id) || [],
         publisherIds: data.publishers?.map(p => p.id) || [],
         genreIds: data.genres?.map(g => g.id) || [],
@@ -227,27 +186,18 @@ const GameForm = () => {
     setSaving(true);
     setError('');
 
-    // Prepare payload
+    // Prepare payload for central catalog
     const payload = {
       ...form,
-      purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : null,
-      hoursPlayed: parseFloat(form.hoursPlayed) || 0,
-      completionStatus: parseInt(form.completionStatus) || 0,
-      personalRating: form.personalRating ? parseFloat(form.personalRating) : null,
-      communityRating: form.communityRating ? parseFloat(form.communityRating) : null,
-      criticRating: form.criticRating ? parseFloat(form.criticRating) : null,
-      metacriticScore: form.metacriticScore ? parseInt(form.metacriticScore) : null,
-      openCriticScore: form.openCriticScore ? parseInt(form.openCriticScore) : null,
+      communityRating: form.communityRating !== '' ? parseFloat(form.communityRating) : null,
+      criticRating: form.criticRating !== '' ? parseFloat(form.criticRating) : null,
+      metacriticScore: form.metacriticScore !== '' ? parseInt(form.metacriticScore) : null,
+      openCriticScore: form.openCriticScore !== '' ? parseInt(form.openCriticScore) : null,
       achievementCount: parseInt(form.achievementCount) || 0,
       dlcCount: parseInt(form.dlcCount) || 0,
       expansionCount: parseInt(form.expansionCount) || 0,
       franchiseId: form.franchiseId ? parseInt(form.franchiseId) : null,
       seriesId: form.seriesId ? parseInt(form.seriesId) : null,
-      // Date validations
-      purchaseDate: form.purchaseDate ? new Date(form.purchaseDate).toISOString() : null,
-      startedPlayingDate: form.startedPlayingDate ? new Date(form.startedPlayingDate).toISOString() : null,
-      completedDate: form.completedDate ? new Date(form.completedDate).toISOString() : null,
-      lastPlayedDate: form.lastPlayedDate ? new Date(form.lastPlayedDate).toISOString() : null,
       releaseDate: form.releaseDate ? new Date(form.releaseDate).toISOString() : null,
       originalReleaseDate: form.originalReleaseDate ? new Date(form.originalReleaseDate).toISOString() : null,
       earlyAccessDate: form.earlyAccessDate ? new Date(form.earlyAccessDate).toISOString() : null
@@ -259,7 +209,7 @@ const GameForm = () => {
       } else {
         await api.post('/games', payload);
       }
-      navigate('/library');
+      navigate('/catalog');
     } catch (err) {
       setError(err.message || 'An error occurred while saving.');
     } finally {
@@ -279,11 +229,11 @@ const GameForm = () => {
     <div className="container-fluid py-2">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h3 className="display-font text-white mb-0">{isEdit ? 'Edit Game' : 'Add New Game'}</h3>
-          <p className="text-muted small">Fill catalog attributes and details</p>
+          <h3 className="display-font text-white mb-0">{isEdit ? 'Edit Catalog Game' : 'Add New Catalog Game'}</h3>
+          <p className="text-muted small">Maintain authoritative game metadata, platforms, and media</p>
         </div>
-        <Link to="/library" className="btn btn-premium-outline btn-sm">
-          <i className="bi bi-chevron-left"></i> Cancel
+        <Link to="/catalog" className="btn btn-premium-outline btn-sm">
+          <i className="bi bi-chevron-left"></i> Back to Catalog
         </Link>
       </div>
 
@@ -307,24 +257,17 @@ const GameForm = () => {
               </button>
               <button
                 type="button"
-                className={`btn text-start w-100 px-3 py-2.5 rounded-3 border-0 display-font ${activeTab === 'ownership' ? 'bg-primary text-white' : 'text-muted hover-bg-tertiary'}`}
-                onClick={() => setActiveTab('ownership')}
+                className={`btn text-start w-100 px-3 py-2.5 rounded-3 border-0 display-font ${activeTab === 'taxonomy' ? 'bg-primary text-white' : 'text-muted hover-bg-tertiary'}`}
+                onClick={() => setActiveTab('taxonomy')}
               >
-                <i className="bi bi-shield-check me-2"></i> Ownership & Play
-              </button>
-              <button
-                type="button"
-                className={`btn text-start w-100 px-3 py-2.5 rounded-3 border-0 display-font ${activeTab === 'purchase' ? 'bg-primary text-white' : 'text-muted hover-bg-tertiary'}`}
-                onClick={() => setActiveTab('purchase')}
-              >
-                <i className="bi bi-wallet2 me-2"></i> Purchase & Extras
+                <i className="bi bi-tags-fill me-2"></i> Taxonomy & Platforms
               </button>
               <button
                 type="button"
                 className={`btn text-start w-100 px-3 py-2.5 rounded-3 border-0 display-font ${activeTab === 'media' ? 'bg-primary text-white' : 'text-muted hover-bg-tertiary'}`}
                 onClick={() => setActiveTab('media')}
               >
-                <i className="bi bi-images me-2"></i> Media & Links
+                <i className="bi bi-images me-2"></i> Media & Assets
               </button>
             </div>
           </div>
@@ -333,7 +276,7 @@ const GameForm = () => {
           <div className="col-12 col-lg-9">
             <div className="glass-panel p-4 p-md-5">
               
-              {/* Tab 1: General */}
+              {/* Tab 1: General Info */}
               {activeTab === 'general' && (
                 <div>
                   <h4 className="display-font text-white mb-4 border-bottom border-secondary border-opacity-10 pb-2">General Information</h4>
@@ -354,13 +297,9 @@ const GameForm = () => {
                       <label className="form-label text-muted small fw-bold">DESCRIPTION</label>
                       <textarea name="description" className="form-control form-glass-control text-white" rows="4" value={form.description} onChange={handleTextChange}></textarea>
                     </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">NOTES</label>
-                      <textarea name="notes" className="form-control form-glass-control text-white" rows="3" value={form.notes} onChange={handleTextChange}></textarea>
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">PERSONAL NOTES</label>
-                      <textarea name="personalNotes" className="form-control form-glass-control text-white" rows="3" value={form.personalNotes} onChange={handleTextChange}></textarea>
+                    <div className="col-12">
+                      <label className="form-label text-muted small fw-bold">CATALOG NOTES / TRIVIA</label>
+                      <textarea name="notes" className="form-control form-glass-control text-white" rows="2" value={form.notes} onChange={handleTextChange}></textarea>
                     </div>
                     
                     {/* Release and Ratings */}
@@ -377,201 +316,23 @@ const GameForm = () => {
                       <input type="date" name="earlyAccessDate" className="form-control form-glass-control text-white" value={form.earlyAccessDate} onChange={handleTextChange} />
                     </div>
 
-                    <div className="col-12 col-md-4">
-                      <label className="form-label text-muted small fw-bold">PERSONAL RATING (0-10)</label>
-                      <input type="number" step="0.1" name="personalRating" className="form-control form-glass-control text-white" value={form.personalRating} onChange={handleTextChange} min="0" max="10" />
-                    </div>
-                    <div className="col-12 col-md-4">
+                    <div className="col-12 col-md-3">
                       <label className="form-label text-muted small fw-bold">COMMUNITY RATING (0-10)</label>
                       <input type="number" step="0.1" name="communityRating" className="form-control form-glass-control text-white" value={form.communityRating} onChange={handleTextChange} min="0" max="10" />
                     </div>
-                    <div className="col-12 col-md-4">
+                    <div className="col-12 col-md-3">
                       <label className="form-label text-muted small fw-bold">CRITIC RATING (0-100)</label>
                       <input type="number" name="criticRating" className="form-control form-glass-control text-white" value={form.criticRating} onChange={handleTextChange} min="0" max="100" />
                     </div>
-
-                    {/* Franchise, Series Dropdowns */}
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">FRANCHISE</label>
-                      <select name="franchiseId" className="form-select form-glass-control text-white" value={form.franchiseId} onChange={handleTextChange}>
-                        <option value="">-- Select Franchise --</option>
-                        {lookups.franchises.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                      </select>
+                    <div className="col-12 col-md-3">
+                      <label className="form-label text-muted small fw-bold">METACRITIC SCORE</label>
+                      <input type="number" name="metacriticScore" className="form-control form-glass-control text-white" value={form.metacriticScore} onChange={handleTextChange} min="0" max="100" />
                     </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">SERIES</label>
-                      <select name="seriesId" className="form-select form-glass-control text-white" value={form.seriesId} onChange={handleTextChange}>
-                        <option value="">-- Select Series --</option>
-                        {lookups.series.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 2: Ownership & Play */}
-              {activeTab === 'ownership' && (
-                <div>
-                  <h4 className="display-font text-white mb-4 border-bottom border-secondary border-opacity-10 pb-2">Ownership & Play Progress</h4>
-                  
-                  <div className="mb-4">
-                    <label className="form-label text-muted small fw-bold d-block mb-3">OWNERSHIP CHECKMARKS</label>
-                    <div className="row g-3">
-                      <div className="col-6 col-md-4">
-                        <div className="form-check form-switch">
-                          <input className="form-check-input" type="checkbox" name="ownGame" id="ownGame" checked={form.ownGame} onChange={handleCheckboxChange} />
-                          <label className="form-check-label text-white small" htmlFor="ownGame">Own Game</label>
-                        </div>
-                      </div>
-                      <div className="col-6 col-md-4">
-                        <div className="form-check form-switch">
-                          <input className="form-check-input" type="checkbox" name="wishlist" id="wishlist" checked={form.wishlist} onChange={handleCheckboxChange} />
-                          <label className="form-check-label text-white small" htmlFor="wishlist">Wishlist</label>
-                        </div>
-                      </div>
-                      <div className="col-6 col-md-4">
-                        <div className="form-check form-switch">
-                          <input className="form-check-input" type="checkbox" name="backlog" id="backlog" checked={form.backlog} onChange={handleCheckboxChange} />
-                          <label className="form-check-label text-white small" htmlFor="backlog">Backlog</label>
-                        </div>
-                      </div>
-                      <div className="col-6 col-md-4">
-                        <div className="form-check form-switch">
-                          <input className="form-check-input" type="checkbox" name="physicalCopy" id="physicalCopy" checked={form.physicalCopy} onChange={handleCheckboxChange} />
-                          <label className="form-check-label text-white small" htmlFor="physicalCopy">Physical Copy</label>
-                        </div>
-                      </div>
-                      <div className="col-6 col-md-4">
-                        <div className="form-check form-switch">
-                          <input className="form-check-input" type="checkbox" name="digitalCopy" id="digitalCopy" checked={form.digitalCopy} onChange={handleCheckboxChange} />
-                          <label className="form-check-label text-white small" htmlFor="digitalCopy">Digital Copy</label>
-                        </div>
-                      </div>
-                      <div className="col-6 col-md-4">
-                        <div className="form-check form-switch">
-                          <input className="form-check-input" type="checkbox" name="collectorsEdition" id="collectorsEdition" checked={form.collectorsEdition} onChange={handleCheckboxChange} />
-                          <label className="form-check-label text-white small" htmlFor="collectorsEdition">Collector's Edition</label>
-                        </div>
-                      </div>
-                      <div className="col-6 col-md-4">
-                        <div className="form-check form-switch">
-                          <input className="form-check-input" type="checkbox" name="specialEdition" id="specialEdition" checked={form.specialEdition} onChange={handleCheckboxChange} />
-                          <label className="form-check-label text-white small" htmlFor="specialEdition">Special Edition</label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <hr className="my-4 border-secondary border-opacity-25" />
-
-                  <div className="row g-3">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">COMPLETION STATUS</label>
-                      <select name="completionStatus" className="form-select form-glass-control text-white" value={form.completionStatus} onChange={handleTextChange}>
-                        {CompletionStatuses.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">HOURS PLAYED</label>
-                      <input type="number" step="0.1" name="hoursPlayed" className="form-control form-glass-control text-white" value={form.hoursPlayed} onChange={handleTextChange} min="0" />
+                    <div className="col-12 col-md-3">
+                      <label className="form-label text-muted small fw-bold">OPENCRITIC SCORE</label>
+                      <input type="number" name="openCriticScore" className="form-control form-glass-control text-white" value={form.openCriticScore} onChange={handleTextChange} min="0" max="100" />
                     </div>
 
-                    <div className="col-12 col-md-4">
-                      <label className="form-label text-muted small fw-bold">STARTED PLAYING DATE</label>
-                      <input type="date" name="startedPlayingDate" className="form-control form-glass-control text-white" value={form.startedPlayingDate} onChange={handleTextChange} />
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label text-muted small fw-bold">COMPLETED DATE</label>
-                      <input type="date" name="completedDate" className="form-control form-glass-control text-white" value={form.completedDate} onChange={handleTextChange} />
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label text-muted small fw-bold">LAST PLAYED DATE</label>
-                      <input type="date" name="lastPlayedDate" className="form-control form-glass-control text-white" value={form.lastPlayedDate} onChange={handleTextChange} />
-                    </div>
-                  </div>
-
-                  <hr className="my-4 border-secondary border-opacity-25" />
-
-                  {/* Platforms & Services selections Checkbox columns */}
-                  <div className="row g-3">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">PLATFORMS</label>
-                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '150px' }}>
-                        {lookups.platforms.map(p => (
-                          <div key={p.id} className="form-check mb-1">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`plat-${p.id}`}
-                              checked={form.platformIds.includes(p.id)}
-                              onChange={() => handleListToggle('platformIds', p.id)}
-                            />
-                            <label className="form-check-label filter-check-label" htmlFor={`plat-${p.id}`}>{p.name}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">DIGITAL SERVICES / STOREFRONTS</label>
-                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '150px' }}>
-                        {lookups.services.map(s => (
-                          <div key={s.id} className="form-check mb-1">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`service-${s.id}`}
-                              checked={form.serviceIds.includes(s.id)}
-                              onChange={() => handleListToggle('serviceIds', s.id)}
-                            />
-                            <label className="form-check-label filter-check-label" htmlFor={`service-${s.id}`}>{s.name}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 3: Purchase & Extras */}
-              {activeTab === 'purchase' && (
-                <div>
-                  <h4 className="display-font text-white mb-4 border-bottom border-secondary border-opacity-10 pb-2">Purchase Facts & Extra Data</h4>
-                  <div className="row g-3">
-                    <div className="col-12 col-md-4">
-                      <label className="form-label text-muted small fw-bold">PURCHASE DATE</label>
-                      <input type="date" name="purchaseDate" className="form-control form-glass-control text-white" value={form.purchaseDate} onChange={handleTextChange} />
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label text-muted small fw-bold">PURCHASE PRICE</label>
-                      <input type="number" step="0.01" name="purchasePrice" className="form-control form-glass-control text-white" value={form.purchasePrice} onChange={handleTextChange} min="0" />
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label text-muted small fw-bold">CURRENCY</label>
-                      <input type="text" name="currency" className="form-control form-glass-control text-white" value={form.currency} onChange={handleTextChange} placeholder="e.g. USD, EUR" />
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">STORE PURCHASED FROM</label>
-                      <input type="text" name="storePurchasedFrom" className="form-control form-glass-control text-white" value={form.storePurchasedFrom} onChange={handleTextChange} placeholder="e.g. Steam, Amazon, Retail" />
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">PURCHASE REGION</label>
-                      <input type="text" name="purchaseRegion" className="form-control form-glass-control text-white" value={form.purchaseRegion} onChange={handleTextChange} placeholder="e.g. US, EU, Global" />
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label text-muted small fw-bold">RECEIPT REFERENCE</label>
-                      <input type="text" name="receiptReference" className="form-control form-glass-control text-white" value={form.receiptReference} onChange={handleTextChange} />
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <div className="form-check form-switch mt-md-4 pt-md-2">
-                        <input className="form-check-input" type="checkbox" name="gifted" id="gifted" checked={form.gifted} onChange={handleCheckboxChange} />
-                        <label className="form-check-label text-white small" htmlFor="gifted">This game was a gift</label>
-                      </div>
-                    </div>
-
-                    <hr className="my-4 border-secondary border-opacity-25" />
-                    
-                    <h5 className="display-font text-white mb-3">Additional Stats & Feature Indicators</h5>
-                    
                     <div className="col-12 col-md-4">
                       <label className="form-label text-muted small fw-bold">ESRB RATING</label>
                       <input type="text" name="esrbRating" className="form-control form-glass-control text-white" value={form.esrbRating} onChange={handleTextChange} placeholder="e.g. E, T, M" />
@@ -590,29 +351,38 @@ const GameForm = () => {
                       </select>
                     </div>
 
-                    <div className="col-12 col-md-4">
-                      <label className="form-label text-muted small fw-bold">METACRITIC SCORE (0-100)</label>
-                      <input type="number" name="metacriticScore" className="form-control form-glass-control text-white" value={form.metacriticScore} onChange={handleTextChange} min="0" max="100" />
+                    {/* Franchise, Series Dropdowns */}
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted small fw-bold">FRANCHISE</label>
+                      <select name="franchiseId" className="form-select form-glass-control text-white" value={form.franchiseId} onChange={handleTextChange}>
+                        <option value="">-- Select Franchise --</option>
+                        {lookups.franchises.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+                      </select>
                     </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label text-muted small fw-bold">OPENCRITIC SCORE (0-100)</label>
-                      <input type="number" name="openCriticScore" className="form-control form-glass-control text-white" value={form.openCriticScore} onChange={handleTextChange} min="0" max="100" />
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted small fw-bold">SERIES</label>
+                      <select name="seriesId" className="form-select form-glass-control text-white" value={form.seriesId} onChange={handleTextChange}>
+                        <option value="">-- Select Series --</option>
+                        {lookups.series.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
                     </div>
+
                     <div className="col-12 col-md-4">
                       <label className="form-label text-muted small fw-bold">ACHIEVEMENT COUNT</label>
                       <input type="number" name="achievementCount" className="form-control form-glass-control text-white" value={form.achievementCount} onChange={handleTextChange} min="0" />
                     </div>
-                    <div className="col-12 col-md-6">
+                    <div className="col-12 col-md-4">
                       <label className="form-label text-muted small fw-bold">DLC COUNT</label>
                       <input type="number" name="dlcCount" className="form-control form-glass-control text-white" value={form.dlcCount} onChange={handleTextChange} min="0" />
                     </div>
-                    <div className="col-12 col-md-6">
+                    <div className="col-12 col-md-4">
                       <label className="form-label text-muted small fw-bold">EXPANSION COUNT</label>
                       <input type="number" name="expansionCount" className="form-control form-glass-control text-white" value={form.expansionCount} onChange={handleTextChange} min="0" />
                     </div>
 
+                    {/* Feature Checkboxes */}
                     <div className="col-12">
-                      <label className="form-label text-muted small fw-bold d-block mb-3">FEATURE CHECKBOXES</label>
+                      <label className="form-label text-muted small fw-bold d-block mb-3">FEATURE INDICATORS</label>
                       <div className="row g-2">
                         <div className="col-6 col-md-4">
                           <div className="form-check">
@@ -656,12 +426,146 @@ const GameForm = () => {
                 </div>
               )}
 
-              {/* Tab 4: Media & Lookups */}
+              {/* Tab 2: Taxonomy & Platforms */}
+              {activeTab === 'taxonomy' && (
+                <div>
+                  <h4 className="display-font text-white mb-4 border-bottom border-secondary border-opacity-10 pb-2">Taxonomy, Platforms & Digital Services</h4>
+                  
+                  <div className="row g-4">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted small fw-bold">SUPPORTED PLATFORMS</label>
+                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '160px' }}>
+                        {lookups.platforms.map(p => (
+                          <div key={p.id} className="form-check mb-1">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`plat-${p.id}`}
+                              checked={form.platformIds.includes(p.id)}
+                              onChange={() => handleListToggle('platformIds', p.id)}
+                            />
+                            <label className="form-check-label filter-check-label" htmlFor={`plat-${p.id}`}>{p.name}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted small fw-bold">DIGITAL SERVICES / STORES</label>
+                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '160px' }}>
+                        {lookups.services.map(s => (
+                          <div key={s.id} className="form-check mb-1">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`service-${s.id}`}
+                              checked={form.serviceIds.includes(s.id)}
+                              onChange={() => handleListToggle('serviceIds', s.id)}
+                            />
+                            <label className="form-check-label filter-check-label" htmlFor={`service-${s.id}`}>{s.name}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted small fw-bold">DEVELOPERS</label>
+                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '160px' }}>
+                        {lookups.developers.map(d => (
+                          <div key={d.id} className="form-check mb-1">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`dev-${d.id}`}
+                              checked={form.developerIds.includes(d.id)}
+                              onChange={() => handleListToggle('developerIds', d.id)}
+                            />
+                            <label className="form-check-label filter-check-label" htmlFor={`dev-${d.id}`}>{d.name}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="col-12 col-md-6">
+                      <label className="form-label text-muted small fw-bold">PUBLISHERS</label>
+                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '160px' }}>
+                        {lookups.publishers.map(p => (
+                          <div key={p.id} className="form-check mb-1">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`pub-${p.id}`}
+                              checked={form.publisherIds.includes(p.id)}
+                              onChange={() => handleListToggle('publisherIds', p.id)}
+                            />
+                            <label className="form-check-label filter-check-label" htmlFor={`pub-${p.id}`}>{p.name}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="col-12 col-md-4">
+                      <label className="form-label text-muted small fw-bold">GENRES</label>
+                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '160px' }}>
+                        {lookups.genres.map(g => (
+                          <div key={g.id} className="form-check mb-1">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`genre-${g.id}`}
+                              checked={form.genreIds.includes(g.id)}
+                              onChange={() => handleListToggle('genreIds', g.id)}
+                            />
+                            <label className="form-check-label filter-check-label" htmlFor={`genre-${g.id}`}>{g.name}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="col-12 col-md-4">
+                      <label className="form-label text-muted small fw-bold">THEMES</label>
+                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '160px' }}>
+                        {lookups.themes.map(t => (
+                          <div key={t.id} className="form-check mb-1">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`theme-${t.id}`}
+                              checked={form.themeIds.includes(t.id)}
+                              onChange={() => handleListToggle('themeIds', t.id)}
+                            />
+                            <label className="form-check-label filter-check-label" htmlFor={`theme-${t.id}`}>{t.name}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="col-12 col-md-4">
+                      <label className="form-label text-muted small fw-bold">TAGS</label>
+                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '160px' }}>
+                        {lookups.tags.map(t => (
+                          <div key={t.id} className="form-check mb-1">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`tag-${t.id}`}
+                              checked={form.tagIds.includes(t.id)}
+                              onChange={() => handleListToggle('tagIds', t.id)}
+                            />
+                            <label className="form-check-label filter-check-label" htmlFor={`tag-${t.id}`}>{t.name}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Media & Assets */}
               {activeTab === 'media' && (
                 <div>
-                  <h4 className="display-font text-white mb-4 border-bottom border-secondary border-opacity-10 pb-2">Media & Config Lookups</h4>
+                  <h4 className="display-font text-white mb-4 border-bottom border-secondary border-opacity-10 pb-2">Media, Images & Video Links</h4>
                   <div className="row g-3 mb-4">
-                    {/* Media image inputs with uploads */}
                     <div className="col-12 col-md-6">
                       <label className="form-label text-muted small fw-bold">COVER IMAGE URL</label>
                       <input type="text" name="coverImage" className="form-control form-glass-control mb-2" value={form.coverImage} onChange={handleTextChange} placeholder="/uploads/covers/..." />
@@ -672,6 +576,7 @@ const GameForm = () => {
                         </div>
                       )}
                     </div>
+
                     <div className="col-12 col-md-6">
                       <label className="form-label text-muted small fw-bold">BANNER IMAGE URL</label>
                       <input type="text" name="banner" className="form-control form-glass-control mb-2" value={form.banner} onChange={handleTextChange} placeholder="/uploads/banners/..." />
@@ -709,97 +614,6 @@ const GameForm = () => {
                       <input type="text" name="youtubeLinks" className="form-control form-glass-control text-white" value={form.youtubeLinks} onChange={handleTextChange} />
                     </div>
                   </div>
-
-                  <hr className="my-4 border-secondary border-opacity-25" />
-
-                  {/* Developers, Publishers, Genres, Tags, Themes checklists */}
-                  <div className="row g-3">
-                    <div className="col-12 col-md-6 col-xxl-4">
-                      <label className="form-label text-muted small fw-bold">DEVELOPERS</label>
-                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '130px' }}>
-                        {lookups.developers.map(d => (
-                          <div key={d.id} className="form-check mb-1">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`dev-${d.id}`}
-                              checked={form.developerIds.includes(d.id)}
-                              onChange={() => handleListToggle('developerIds', d.id)}
-                            />
-                            <label className="form-check-label filter-check-label" htmlFor={`dev-${d.id}`}>{d.name}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-12 col-md-6 col-xxl-4">
-                      <label className="form-label text-muted small fw-bold">PUBLISHERS</label>
-                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '130px' }}>
-                        {lookups.publishers.map(p => (
-                          <div key={p.id} className="form-check mb-1">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`pub-${p.id}`}
-                              checked={form.publisherIds.includes(p.id)}
-                              onChange={() => handleListToggle('publisherIds', p.id)}
-                            />
-                            <label className="form-check-label filter-check-label" htmlFor={`pub-${p.id}`}>{p.name}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-12 col-md-6 col-xxl-4">
-                      <label className="form-label text-muted small fw-bold">GENRES</label>
-                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '130px' }}>
-                        {lookups.genres.map(g => (
-                          <div key={g.id} className="form-check mb-1">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`genre-${g.id}`}
-                              checked={form.genreIds.includes(g.id)}
-                              onChange={() => handleListToggle('genreIds', g.id)}
-                            />
-                            <label className="form-check-label filter-check-label" htmlFor={`genre-${g.id}`}>{g.name}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-12 col-md-6 col-xxl-4">
-                      <label className="form-label text-muted small fw-bold">THEMES</label>
-                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '130px' }}>
-                        {lookups.themes.map(t => (
-                          <div key={t.id} className="form-check mb-1">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`theme-${t.id}`}
-                              checked={form.themeIds.includes(t.id)}
-                              onChange={() => handleListToggle('themeIds', t.id)}
-                            />
-                            <label className="form-check-label filter-check-label" htmlFor={`theme-${t.id}`}>{t.name}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-12 col-md-6 col-xxl-4">
-                      <label className="form-label text-muted small fw-bold">TAGS</label>
-                      <div className="filter-section-box overflow-y-auto" style={{ maxHeight: '130px' }}>
-                        {lookups.tags.map(t => (
-                          <div key={t.id} className="form-check mb-1">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`tag-${t.id}`}
-                              checked={form.tagIds.includes(t.id)}
-                              onChange={() => handleListToggle('tagIds', t.id)}
-                            />
-                            <label className="form-check-label filter-check-label" htmlFor={`tag-${t.id}`}>{t.name}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -807,12 +621,12 @@ const GameForm = () => {
 
               {/* Submit Buttons */}
               <div className="d-flex justify-content-end gap-2">
-                <Link to="/library" className="btn btn-premium-outline">
+                <Link to="/catalog" className="btn btn-premium-outline">
                   Cancel
                 </Link>
                 <button type="submit" className="btn btn-premium-purple px-5" disabled={saving}>
                   {saving ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-check-circle me-1"></i>}
-                  Save Game
+                  Save Game to Catalog
                 </button>
               </div>
 

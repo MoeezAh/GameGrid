@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GameCollection.Application.Features.Games.Queries.GetGameById;
 
-public record GetGameByIdQuery(int Id, string UserId) : IRequest<GameDto?>;
+public record GetGameByIdQuery(int Id, string? UserId = null) : IRequest<GameDto?>;
 
 public class GetGameByIdQueryHandler : IRequestHandler<GetGameByIdQuery, GameDto?>
 {
@@ -34,10 +34,24 @@ public class GetGameByIdQueryHandler : IRequestHandler<GetGameByIdQuery, GameDto
             .Include(g => g.Themes)
             .Include(g => g.Platforms)
             .Include(g => g.DigitalServices)
-            .FirstOrDefaultAsync(g => g.Id == request.Id && g.UserId == request.UserId, cancellationToken);
+            .FirstOrDefaultAsync(g => g.Id == request.Id, cancellationToken);
 
         if (game == null) return null;
 
-        return _mapper.Map<GameDto>(game);
+        var dto = _mapper.Map<GameDto>(game);
+
+        if (!string.IsNullOrEmpty(request.UserId))
+        {
+            var libraryEntry = await _unitOfWork.Repository<UserLibraryEntry>().GetQueryable()
+                .FirstOrDefaultAsync(l => l.GameId == request.Id && l.UserId == request.UserId, cancellationToken);
+
+            if (libraryEntry != null)
+            {
+                dto.IsInUserLibrary = true;
+                dto.UserLibraryEntryId = libraryEntry.Id;
+            }
+        }
+
+        return dto;
     }
 }

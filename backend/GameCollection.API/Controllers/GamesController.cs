@@ -2,6 +2,7 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using GameCollection.Application.Common.Interfaces;
+using GameCollection.Application.Common.Security;
 using GameCollection.Application.Features.Games.Commands.CreateGame;
 using GameCollection.Application.Features.Games.Commands.DeleteGame;
 using GameCollection.Application.Features.Games.Commands.UpdateGame;
@@ -29,12 +30,10 @@ public class GamesController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission(Permissions.Games.View)]
     public async Task<IActionResult> GetGames([FromQuery] GetGamesQuery query)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-        // Enforce current user ID
         var queryWithUser = query with { UserId = userId };
         
         var result = await _mediator.Send(queryWithUser);
@@ -42,11 +41,10 @@ public class GamesController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [HasPermission(Permissions.Games.View)]
     public async Task<IActionResult> GetGame(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
         var game = await _mediator.Send(new GetGameByIdQuery(id, userId));
         if (game == null) return NotFound($"Game with ID {id} not found.");
 
@@ -54,48 +52,40 @@ public class GamesController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission(Permissions.Games.Create)]
     public async Task<IActionResult> Create([FromBody] CreateGameCommand command)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-        command.UserId = userId;
         var gameId = await _mediator.Send(command);
-        
         return CreatedAtAction(nameof(GetGame), new { id = gameId }, new { id = gameId });
     }
 
     [HttpPut("{id:int}")]
+    [HasPermission(Permissions.Games.Update)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateGameCommand command)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
         if (id != command.Id)
         {
             return BadRequest("ID in URL path does not match ID in request body.");
         }
 
-        command.UserId = userId;
         var succeeded = await _mediator.Send(command);
-        if (!succeeded) return NotFound($"Game with ID {id} not found or access denied.");
+        if (!succeeded) return NotFound($"Game with ID {id} not found.");
 
         return NoContent();
     }
 
     [HttpDelete("{id:int}")]
+    [HasPermission(Permissions.Games.Delete)]
     public async Task<IActionResult> Delete(int id)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-        var succeeded = await _mediator.Send(new DeleteGameCommand(id, userId));
-        if (!succeeded) return NotFound($"Game with ID {id} not found or access denied.");
+        var succeeded = await _mediator.Send(new DeleteGameCommand(id));
+        if (!succeeded) return NotFound($"Game with ID {id} not found.");
 
         return NoContent();
     }
 
     [HttpPost("upload")]
+    [HasPermission(Permissions.Games.ManageMetadata)]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadMedia([FromForm] UploadMediaRequest request)
     {
@@ -107,7 +97,6 @@ public class GamesController : ControllerBase
             return BadRequest("No file was uploaded.");
         }
 
-        // Validate folder names to prevent path traversal
         var validFolders = new[] { "covers", "boxarts", "banners", "logos", "screenshots", "artworks", "fanarts" };
         if (string.IsNullOrWhiteSpace(folderName) || !Array.Exists(validFolders, f => f == folderName.ToLower()))
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,51 +30,61 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
 
     public async Task<DashboardDto> Handle(GetDashboardStatsQuery request, CancellationToken cancellationToken)
     {
-        var repository = _unitOfWork.Repository<Game>();
+        var repository = _unitOfWork.Repository<UserLibraryEntry>();
         var query = repository.GetQueryable()
-            .Where(g => g.UserId == request.UserId);
+            .Include(l => l.Game)
+                .ThenInclude(g => g.Platforms)
+            .Include(l => l.Game)
+                .ThenInclude(g => g.Genres)
+            .Include(l => l.Platforms)
+            .Include(l => l.DigitalServices)
+            .Where(l => l.UserId == request.UserId);
 
-        var totalGamesOwned = await query.CountAsync(g => g.OwnGame, cancellationToken);
-        var totalCompletedGames = await query.CountAsync(g => g.CompletionStatus == CompletionStatus.Completed || g.CompletionStatus == CompletionStatus.Completed100, cancellationToken);
-        var totalUnplayedGames = await query.CountAsync(g => g.CompletionStatus == CompletionStatus.NotStarted, cancellationToken);
-        var wishlistCount = await query.CountAsync(g => g.Wishlist, cancellationToken);
-        var backlogCount = await query.CountAsync(g => g.Backlog, cancellationToken);
+        var totalGamesOwned = await query.CountAsync(l => l.OwnGame, cancellationToken);
+        var totalCompletedGames = await query.CountAsync(l => l.CompletionStatus == CompletionStatus.Completed || l.CompletionStatus == CompletionStatus.Completed100, cancellationToken);
+        var totalUnplayedGames = await query.CountAsync(l => l.CompletionStatus == CompletionStatus.NotStarted, cancellationToken);
+        var wishlistCount = await query.CountAsync(l => l.Wishlist, cancellationToken);
+        var backlogCount = await query.CountAsync(l => l.Backlog, cancellationToken);
 
-        // Calculate completion percentage based on games owned
+        // Completion percentage
         double completionPercentage = 0;
         if (totalGamesOwned > 0)
         {
             completionPercentage = Math.Round((double)totalCompletedGames / totalGamesOwned * 100, 2);
         }
 
-        // Platforms & Services count in user's library
-        var totalPlatforms = await query.SelectMany(g => g.Platforms).Select(p => p.Id).Distinct().CountAsync(cancellationToken);
-        var totalServices = await query.SelectMany(g => g.DigitalServices).Select(s => s.Id).Distinct().CountAsync(cancellationToken);
+        // Count unique platforms across user library
+        var totalPlatforms = await query.SelectMany(l => l.Platforms.Any() ? l.Platforms : l.Game.Platforms)
+            .Select(p => p.Id).Distinct().CountAsync(cancellationToken);
 
-        // Recent listings
-        var recentlyAdded = await query
-            .OrderByDescending(g => g.CreatedDate)
+        var totalServices = await query.SelectMany(l => l.DigitalServices.Any() ? l.DigitalServices : l.Game.DigitalServices)
+            .Select(s => s.Id).Distinct().CountAsync(cancellationToken);
+
+        // Recent listings mapped to GameListDto
+        var recentlyAddedEntries = await query
+            .OrderByDescending(l => l.CreatedDate)
             .Take(5)
-            .ProjectTo<GameListDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 
-        var recentlyCompleted = await query
-            .Where(g => g.CompletionStatus == CompletionStatus.Completed || g.CompletionStatus == CompletionStatus.Completed100)
-            .OrderByDescending(g => g.CompletedDate ?? g.UpdatedDate)
+        var recentlyCompletedEntries = await query
+            .Where(l => l.CompletionStatus == CompletionStatus.Completed || l.CompletionStatus == CompletionStatus.Completed100)
+            .OrderByDescending(l => l.CompletedDate ?? l.UpdatedDate)
             .Take(5)
-            .ProjectTo<GameListDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 
-        var mostPlayed = await query
-            .Where(g => g.HoursPlayed > 0)
-            .OrderByDescending(g => g.HoursPlayed)
+        var mostPlayedEntries = await query
+            .Where(l => l.HoursPlayed > 0)
+            .OrderByDescending(l => l.HoursPlayed)
             .Take(5)
-            .ProjectTo<GameListDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
+
+        var recentlyAdded = recentlyAddedEntries.Select(MapToGameListDto).ToList();
+        var recentlyCompleted = recentlyCompletedEntries.Select(MapToGameListDto).ToList();
+        var mostPlayed = mostPlayedEntries.Select(MapToGameListDto).ToList();
 
         // Chart Data - Games by Platform
         var gamesByPlatform = await query
-            .SelectMany(g => g.Platforms)
+            .SelectMany(l => l.Platforms.Any() ? l.Platforms : l.Game.Platforms)
             .GroupBy(p => p.Name)
             .Select(grp => new ChartDataItem
             {
@@ -84,7 +95,7 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
 
         // Chart Data - Games by Genre
         var gamesByGenre = await query
-            .SelectMany(g => g.Genres)
+            .SelectMany(l => l.Game.Genres)
             .GroupBy(g => g.Name)
             .Select(grp => new ChartDataItem
             {
@@ -95,8 +106,8 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
 
         // Chart Data - Games by Release Year
         var gamesByReleaseYear = await query
-            .Where(g => g.ReleaseDate != null)
-            .GroupBy(g => g.ReleaseDate!.Value.Year)
+            .Where(l => l.Game.ReleaseDate != null)
+            .GroupBy(l => l.Game.ReleaseDate!.Value.Year)
             .Select(grp => new ChartDataItem
             {
                 Name = grp.Key.ToString(),
@@ -107,7 +118,7 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
 
         // Chart Data - Games by Status
         var gamesByStatus = await query
-            .GroupBy(g => g.CompletionStatus)
+            .GroupBy(l => l.CompletionStatus)
             .Select(grp => new ChartDataItem
             {
                 Name = grp.Key.ToString(),
@@ -115,7 +126,6 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
             })
             .ToListAsync(cancellationToken);
 
-        // Format CompletionStatus names nicely for UI
         foreach (var statusItem in gamesByStatus)
         {
             statusItem.Name = statusItem.Name switch
@@ -143,6 +153,27 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
             GamesByGenre = gamesByGenre,
             GamesByReleaseYear = gamesByReleaseYear,
             GamesByStatus = gamesByStatus
+        };
+    }
+
+    private static GameListDto MapToGameListDto(UserLibraryEntry l)
+    {
+        return new GameListDto
+        {
+            Id = l.GameId,
+            Title = l.Game.Title,
+            CoverImage = l.Game.CoverImage,
+            Banner = l.Game.Banner,
+            ReleaseDate = l.Game.ReleaseDate,
+            CommunityRating = l.Game.CommunityRating,
+            CriticRating = l.Game.CriticRating,
+            MetacriticScore = l.Game.MetacriticScore,
+            Platforms = l.Platforms.Any() ? l.Platforms.Select(p => p.Name).ToList() : l.Game.Platforms.Select(p => p.Name).ToList(),
+            Genres = l.Game.Genres.Select(g => g.Name).ToList(),
+            Services = l.DigitalServices.Any() ? l.DigitalServices.Select(s => s.Name).ToList() : l.Game.DigitalServices.Select(s => s.Name).ToList(),
+            Tags = l.Game.Tags.Select(t => t.Name).ToList(),
+            IsInUserLibrary = true,
+            UserLibraryEntryId = l.Id
         };
     }
 }

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GameCollection.Domain.Entities;
-using GameCollection.Domain.Enums;
 using GameCollection.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -18,31 +17,7 @@ public record CreateGameCommand : IRequest<int>
     public string? OriginalTitle { get; init; }
     public string? Description { get; init; }
     public string? Notes { get; init; }
-    public string? PersonalNotes { get; init; }
 
-    public bool OwnGame { get; init; }
-    public bool Wishlist { get; init; }
-    public bool Backlog { get; init; }
-    public bool PhysicalCopy { get; init; }
-    public bool DigitalCopy { get; init; }
-    public bool CollectorsEdition { get; init; }
-    public bool SpecialEdition { get; init; }
-
-    public DateTimeOffset? PurchaseDate { get; init; }
-    public decimal? PurchasePrice { get; init; }
-    public string? Currency { get; init; }
-    public string? StorePurchasedFrom { get; init; }
-    public string? PurchaseRegion { get; init; }
-    public string? ReceiptReference { get; init; }
-    public bool Gifted { get; init; }
-
-    public DateTimeOffset? StartedPlayingDate { get; init; }
-    public DateTimeOffset? CompletedDate { get; init; }
-    public DateTimeOffset? LastPlayedDate { get; init; }
-    public double HoursPlayed { get; init; }
-    public CompletionStatus CompletionStatus { get; init; }
-
-    public double? PersonalRating { get; init; }
     public double? CommunityRating { get; init; }
     public double? CriticRating { get; init; }
 
@@ -76,8 +51,6 @@ public record CreateGameCommand : IRequest<int>
     public int DlcCount { get; init; }
     public int ExpansionCount { get; init; }
 
-    public string UserId { get; set; } = null!;
-
     public int? FranchiseId { get; init; }
     public int? SeriesId { get; init; }
 
@@ -103,32 +76,11 @@ public class CreateGameCommandHandler : IRequestHandler<CreateGameCommand, int>
     {
         var game = new Game
         {
-            Title = request.Title,
+            Title = request.Title.Trim(),
             AlternateTitles = request.AlternateTitles,
             OriginalTitle = request.OriginalTitle,
             Description = request.Description,
             Notes = request.Notes,
-            PersonalNotes = request.PersonalNotes,
-            OwnGame = request.OwnGame,
-            Wishlist = request.Wishlist,
-            Backlog = request.Backlog,
-            PhysicalCopy = request.PhysicalCopy,
-            DigitalCopy = request.DigitalCopy,
-            CollectorsEdition = request.CollectorsEdition,
-            SpecialEdition = request.SpecialEdition,
-            PurchaseDate = request.PurchaseDate,
-            PurchasePrice = request.PurchasePrice,
-            Currency = request.Currency,
-            StorePurchasedFrom = request.StorePurchasedFrom,
-            PurchaseRegion = request.PurchaseRegion,
-            ReceiptReference = request.ReceiptReference,
-            Gifted = request.Gifted,
-            StartedPlayingDate = request.StartedPlayingDate,
-            CompletedDate = request.CompletedDate,
-            LastPlayedDate = request.LastPlayedDate,
-            HoursPlayed = request.HoursPlayed,
-            CompletionStatus = request.CompletionStatus,
-            PersonalRating = request.PersonalRating,
             CommunityRating = request.CommunityRating,
             CriticRating = request.CriticRating,
             ReleaseDate = request.ReleaseDate,
@@ -158,12 +110,10 @@ public class CreateGameCommandHandler : IRequestHandler<CreateGameCommand, int>
             AchievementCount = request.AchievementCount,
             DlcCount = request.DlcCount,
             ExpansionCount = request.ExpansionCount,
-            UserId = request.UserId,
             FranchiseId = request.FranchiseId,
             SeriesId = request.SeriesId
         };
 
-        // Fetch related entities and link them
         if (request.DeveloperIds.Any())
         {
             game.Developers = await _unitOfWork.Repository<Developer>().GetQueryable()

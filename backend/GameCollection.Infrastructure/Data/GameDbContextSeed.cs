@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GameCollection.Application.Common.Security;
 using GameCollection.Domain.Entities;
 using GameCollection.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
@@ -13,17 +14,136 @@ public static class GameDbContextSeed
 {
     public static async Task SeedAsync(GameDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
     {
-        // 1. Seed Roles
-        if (!await roleManager.RoleExistsAsync("Administrator"))
+        // 1. Seed Permissions
+        var existingPermissionNames = await context.Permissions.Select(p => p.Name).ToListAsync();
+        var missingPermissions = Permissions.All
+            .Where(p => !existingPermissionNames.Contains(p.Name))
+            .Select(p => new Permission
+            {
+                Name = p.Name,
+                DisplayName = p.DisplayName,
+                Description = p.Description,
+                Category = p.Category
+            })
+            .ToList();
+
+        if (missingPermissions.Any())
         {
-            await roleManager.CreateAsync(new IdentityRole("Administrator"));
-        }
-        if (!await roleManager.RoleExistsAsync("User"))
-        {
-            await roleManager.CreateAsync(new IdentityRole("User"));
+            await context.Permissions.AddRangeAsync(missingPermissions);
+            await context.SaveChangesAsync();
         }
 
-        // 2. Seed Users
+        var allPermissions = await context.Permissions.ToListAsync();
+
+        // 2. Seed Standard Roles
+        var superAdminRole = await context.ApplicationRoles.FirstOrDefaultAsync(r => r.Name == "Super Admin" && !r.IsDeleted);
+        if (superAdminRole == null)
+        {
+            superAdminRole = new ApplicationRole
+            {
+                Name = "Super Admin",
+                Description = "Unrestricted system administrator with full access to all resources and role management.",
+                IsActive = true,
+                IsSuperAdmin = true,
+                IsSystemRole = true,
+                CreatedDate = DateTimeOffset.UtcNow,
+                CreatedBy = "System"
+            };
+            await context.ApplicationRoles.AddAsync(superAdminRole);
+            await context.SaveChangesAsync();
+        }
+
+        var adminRole = await context.ApplicationRoles.Include(r => r.RolePermissions).FirstOrDefaultAsync(r => r.Name == "Admin" && !r.IsDeleted);
+        if (adminRole == null)
+        {
+            adminRole = new ApplicationRole
+            {
+                Name = "Admin",
+                Description = "Administrator with access to catalog, users, metadata and request review.",
+                IsActive = true,
+                IsSuperAdmin = false,
+                IsSystemRole = false,
+                CreatedDate = DateTimeOffset.UtcNow,
+                CreatedBy = "System"
+            };
+
+            // Grant all permissions except Roles.AssignPermissions and Roles.Delete
+            var adminPerms = allPermissions
+                .Where(p => p.Category != "Roles" || p.Name == Permissions.Roles.View)
+                .Select(p => new ApplicationRolePermission { PermissionId = p.Id });
+
+            foreach (var p in adminPerms) adminRole.RolePermissions.Add(p);
+
+            await context.ApplicationRoles.AddAsync(adminRole);
+            await context.SaveChangesAsync();
+        }
+
+        var curatorRole = await context.ApplicationRoles.Include(r => r.RolePermissions).FirstOrDefaultAsync(r => r.Name == "Game Curator" && !r.IsDeleted);
+        if (curatorRole == null)
+        {
+            curatorRole = new ApplicationRole
+            {
+                Name = "Game Curator",
+                Description = "Manages central catalog games, reviews game requests, and organizes metadata.",
+                IsActive = true,
+                IsSuperAdmin = false,
+                IsSystemRole = false,
+                CreatedDate = DateTimeOffset.UtcNow,
+                CreatedBy = "System"
+            };
+
+            var curatorPermNames = new HashSet<string>
+            {
+                Permissions.Games.View, Permissions.Games.Create, Permissions.Games.Update, Permissions.Games.ManageMetadata,
+                Permissions.GameRequests.ViewAny, Permissions.GameRequests.Approve, Permissions.GameRequests.Reject, Permissions.GameRequests.Edit,
+                Permissions.Metadata.View, Permissions.Metadata.ManagePlatforms, Permissions.Metadata.ManageServices,
+                Permissions.Metadata.ManageDevelopers, Permissions.Metadata.ManagePublishers, Permissions.Metadata.ManageTaxonomies,
+                Permissions.Libraries.ViewOwn, Permissions.Libraries.AddGame, Permissions.Libraries.UpdateOwn, Permissions.Libraries.RemoveGame
+            };
+
+            var curatorPerms = allPermissions
+                .Where(p => curatorPermNames.Contains(p.Name))
+                .Select(p => new ApplicationRolePermission { PermissionId = p.Id });
+
+            foreach (var p in curatorPerms) curatorRole.RolePermissions.Add(p);
+
+            await context.ApplicationRoles.AddAsync(curatorRole);
+            await context.SaveChangesAsync();
+        }
+
+        var userRole = await context.ApplicationRoles.Include(r => r.RolePermissions).FirstOrDefaultAsync(r => r.Name == "User" && !r.IsDeleted);
+        if (userRole == null)
+        {
+            userRole = new ApplicationRole
+            {
+                Name = "User",
+                Description = "Standard gamer with personal library management and game request submission.",
+                IsActive = true,
+                IsSuperAdmin = false,
+                IsSystemRole = false,
+                CreatedDate = DateTimeOffset.UtcNow,
+                CreatedBy = "System"
+            };
+
+            var userPermNames = new HashSet<string>
+            {
+                Permissions.Games.View,
+                Permissions.Libraries.ViewOwn, Permissions.Libraries.AddGame, Permissions.Libraries.UpdateOwn, Permissions.Libraries.RemoveGame,
+                Permissions.GameRequests.Create, Permissions.GameRequests.ViewOwn,
+                Permissions.Metadata.View
+            };
+
+            var userPerms = allPermissions
+                .Where(p => userPermNames.Contains(p.Name))
+                .Select(p => new ApplicationRolePermission { PermissionId = p.Id });
+
+            foreach (var p in userPerms) userRole.RolePermissions.Add(p);
+
+            await context.ApplicationRoles.AddAsync(userRole);
+            await context.SaveChangesAsync();
+        }
+
+        // 3. Seed Users & Assign Application Roles
         IdentityUser? adminUser = await userManager.FindByNameAsync("admin");
         if (adminUser == null)
         {
@@ -36,9 +156,21 @@ public static class GameDbContextSeed
             var result = await userManager.CreateAsync(adminUser, "Admin123!");
             if (result.Succeeded)
             {
+                if (!await roleManager.RoleExistsAsync("Administrator"))
+                    await roleManager.CreateAsync(new IdentityRole("Administrator"));
                 await userManager.AddToRoleAsync(adminUser, "Administrator");
-                await userManager.AddToRoleAsync(adminUser, "User");
             }
+        }
+
+        // Assign Super Admin role to admin user
+        if (adminUser != null && !await context.ApplicationUserRoles.AnyAsync(ur => ur.UserId == adminUser.Id && ur.RoleId == superAdminRole.Id))
+        {
+            await context.ApplicationUserRoles.AddAsync(new ApplicationUserRole
+            {
+                UserId = adminUser.Id,
+                RoleId = superAdminRole.Id
+            });
+            await context.SaveChangesAsync();
         }
 
         IdentityUser? normalUser = await userManager.FindByNameAsync("user");
@@ -53,11 +185,24 @@ public static class GameDbContextSeed
             var result = await userManager.CreateAsync(normalUser, "User123!");
             if (result.Succeeded)
             {
+                if (!await roleManager.RoleExistsAsync("User"))
+                    await roleManager.CreateAsync(new IdentityRole("User"));
                 await userManager.AddToRoleAsync(normalUser, "User");
             }
         }
 
-        // 3. Seed Master Data (Only if empty)
+        // Assign User role to normal user
+        if (normalUser != null && !await context.ApplicationUserRoles.AnyAsync(ur => ur.UserId == normalUser.Id && ur.RoleId == userRole.Id))
+        {
+            await context.ApplicationUserRoles.AddAsync(new ApplicationUserRole
+            {
+                UserId = normalUser.Id,
+                RoleId = userRole.Id
+            });
+            await context.SaveChangesAsync();
+        }
+
+        // 4. Seed Metadata Lookups
         if (!await context.Platforms.AnyAsync())
         {
             var platforms = new List<Platform>
@@ -69,6 +214,7 @@ public static class GameDbContextSeed
                 new() { Name = "Steam Deck", Manufacturer = "Valve", ReleaseDate = new DateTimeOffset(2022, 2, 25, 0, 0, 0, TimeSpan.Zero), Generation = 8, Notes = "Handheld gaming PC" }
             };
             await context.Platforms.AddRangeAsync(platforms);
+            await context.SaveChangesAsync();
         }
 
         if (!await context.DigitalServices.AnyAsync())
@@ -82,6 +228,7 @@ public static class GameDbContextSeed
                 new() { Name = "PlayStation Plus", Website = "https://www.playstation.com/playstation-plus", Notes = "Sony game subscription service" }
             };
             await context.DigitalServices.AddRangeAsync(services);
+            await context.SaveChangesAsync();
         }
 
         if (!await context.Developers.AnyAsync())
@@ -94,44 +241,34 @@ public static class GameDbContextSeed
                 new() { Name = "Nintendo", Website = "https://www.nintendo.com", Country = "Japan", FoundedDate = new DateTimeOffset(1889, 9, 23, 0, 0, 0, TimeSpan.Zero), Description = "Gaming pioneers, creators of Mario, Zelda, Metroid" }
             };
             await context.Developers.AddRangeAsync(devs);
+            await context.SaveChangesAsync();
         }
 
         if (!await context.Publishers.AnyAsync())
         {
             var pubs = new List<Publisher>
             {
-                new() { Name = "Valve", Website = "https://www.valvesoftware.com", Country = "USA" },
-                new() { Name = "CD Projekt", Website = "https://www.cdprojekt.com", Country = "Poland" },
-                new() { Name = "Bandai Namco", Website = "https://www.bandainamcoent.com", Country = "Japan" },
-                new() { Name = "Nintendo", Website = "https://www.nintendo.com", Country = "Japan" }
+                new() { Name = "Bandai Namco Entertainment", Website = "https://en.bandainamcoent.eu", Country = "Japan", FoundedDate = new DateTimeOffset(2006, 3, 31, 0, 0, 0, TimeSpan.Zero) },
+                new() { Name = "CD Projekt", Website = "https://www.cdprojekt.com", Country = "Poland", FoundedDate = new DateTimeOffset(1994, 5, 1, 0, 0, 0, TimeSpan.Zero) },
+                new() { Name = "Nintendo", Website = "https://www.nintendo.com", Country = "Japan", FoundedDate = new DateTimeOffset(1889, 9, 23, 0, 0, 0, TimeSpan.Zero) },
+                new() { Name = "Electronic Arts", Website = "https://www.ea.com", Country = "USA", FoundedDate = new DateTimeOffset(1982, 5, 27, 0, 0, 0, TimeSpan.Zero) }
             };
             await context.Publishers.AddRangeAsync(pubs);
+            await context.SaveChangesAsync();
         }
 
         if (!await context.Genres.AnyAsync())
         {
             var genres = new List<Genre>
             {
-                new() { Name = "Action", Description = "Fast-paced gameplay focusing on physical challenges" },
-                new() { Name = "RPG", Description = "Role-Playing Games focusing on character progression and narrative" },
-                new() { Name = "Adventure", Description = "Focusing on exploration, puzzle-solving, and story" },
-                new() { Name = "FPS", Description = "First-Person Shooters" },
+                new() { Name = "Action", Description = "Fast-paced games focusing on physical challenges" },
+                new() { Name = "RPG", Description = "Role-playing games featuring character progression and storytelling" },
+                new() { Name = "Adventure", Description = "Exploration and puzzle-solving journeys" },
                 new() { Name = "Strategy", Description = "Tactical planning and resource management" },
-                new() { Name = "Simulation", Description = "Simulating real-world or fictional systems" }
+                new() { Name = "Shooter", Description = "Gunplay and projectile challenges" }
             };
             await context.Genres.AddRangeAsync(genres);
-        }
-
-        if (!await context.Themes.AnyAsync())
-        {
-            var themes = new List<Theme>
-            {
-                new() { Name = "Sci-Fi", Description = "Futuristic science fiction settings" },
-                new() { Name = "Fantasy", Description = "Magic, swords, and mythological settings" },
-                new() { Name = "Cyberpunk", Description = "High tech, low life dystopian settings" },
-                new() { Name = "Horror", Description = "Scary, spooky, or survival horror settings" }
-            };
-            await context.Themes.AddRangeAsync(themes);
+            await context.SaveChangesAsync();
         }
 
         if (!await context.Tags.AnyAsync())
@@ -139,318 +276,250 @@ public static class GameDbContextSeed
             var tags = new List<Tag>
             {
                 new() { Name = "Singleplayer" },
-                new() { Name = "Multiplayer" },
-                new() { Name = "Co-op" },
                 new() { Name = "Open World" },
-                new() { Name = "Indie" }
+                new() { Name = "Souls-like" },
+                new() { Name = "Cyberpunk" },
+                new() { Name = "Atmospheric" },
+                new() { Name = "Masterpiece" }
             };
             await context.Tags.AddRangeAsync(tags);
+            await context.SaveChangesAsync();
+        }
+
+        if (!await context.Themes.AnyAsync())
+        {
+            var themes = new List<Theme>
+            {
+                new() { Name = "Dark Fantasy" },
+                new() { Name = "Sci-Fi" },
+                new() { Name = "Post-Apocalyptic" },
+                new() { Name = "Cyberpunk" },
+                new() { Name = "High Fantasy" }
+            };
+            await context.Themes.AddRangeAsync(themes);
+            await context.SaveChangesAsync();
         }
 
         if (!await context.Franchises.AnyAsync())
         {
             var franchises = new List<Franchise>
             {
-                new() { Name = "The Witcher", Description = "Geralt of Rivia fantasy franchise" },
-                new() { Name = "Dark Souls", Description = "Challenging action-RPG series" },
-                new() { Name = "The Legend of Zelda", Description = "Nintendo's legendary adventure series" }
+                new() { Name = "The Legend of Zelda", Description = "Iconic Nintendo action-adventure franchise" },
+                new() { Name = "The Witcher", Description = "Dark fantasy series based on Andrzej Sapkowski novels" },
+                new() { Name = "Dark Souls / Soulsborne", Description = "Challenging action RPGs by FromSoftware" }
             };
             await context.Franchises.AddRangeAsync(franchises);
+            await context.SaveChangesAsync();
         }
 
         if (!await context.Series.AnyAsync())
         {
-            var series = new List<Series>
+            var seriesList = new List<Series>
             {
-                new() { Name = "Main Entry", Description = "Core canon releases" },
-                new() { Name = "Spin-off", Description = "Alternative releases" }
+                new() { Name = "Main Series" },
+                new() { Name = "Spin-offs" }
             };
-            await context.Series.AddRangeAsync(series);
+            await context.Series.AddRangeAsync(seriesList);
+            await context.SaveChangesAsync();
         }
 
-        await context.SaveChangesAsync();
-
-        // 4. Seed Games (Only if empty library)
+        // 5. Seed Catalog Games & User Library Entries
         if (!await context.Games.AnyAsync())
         {
-            // Retrieve seeded lookup references
             var pc = await context.Platforms.FirstAsync(p => p.Name == "PC");
             var ps5 = await context.Platforms.FirstAsync(p => p.Name == "PlayStation 5");
             var switchPlat = await context.Platforms.FirstAsync(p => p.Name == "Nintendo Switch");
             var deck = await context.Platforms.FirstAsync(p => p.Name == "Steam Deck");
 
             var steam = await context.DigitalServices.FirstAsync(s => s.Name == "Steam");
-            var gog = await context.DigitalServices.FirstAsync(s => s.Name == "GOG");
-
-            var cdpr = await context.Developers.FirstAsync(d => d.Name == "CD Projekt Red");
             var fromsoft = await context.Developers.FirstAsync(d => d.Name == "FromSoftware");
+            var cdpr = await context.Developers.FirstAsync(d => d.Name == "CD Projekt Red");
             var nintendo = await context.Developers.FirstAsync(d => d.Name == "Nintendo");
 
+            var bandai = await context.Publishers.FirstAsync(p => p.Name == "Bandai Namco Entertainment");
             var cdprPub = await context.Publishers.FirstAsync(p => p.Name == "CD Projekt");
-            var bandai = await context.Publishers.FirstAsync(p => p.Name == "Bandai Namco");
             var nintendoPub = await context.Publishers.FirstAsync(p => p.Name == "Nintendo");
 
             var rpg = await context.Genres.FirstAsync(g => g.Name == "RPG");
             var action = await context.Genres.FirstAsync(g => g.Name == "Action");
             var adventure = await context.Genres.FirstAsync(g => g.Name == "Adventure");
 
-            var fantasy = await context.Themes.FirstAsync(t => t.Name == "Fantasy");
+            var fantasy = await context.Themes.FirstAsync(t => t.Name == "Dark Fantasy");
             var cyberpunkTheme = await context.Themes.FirstAsync(t => t.Name == "Cyberpunk");
             var sciFi = await context.Themes.FirstAsync(t => t.Name == "Sci-Fi");
 
             var sp = await context.Tags.FirstAsync(t => t.Name == "Singleplayer");
             var ow = await context.Tags.FirstAsync(t => t.Name == "Open World");
+            var souls = await context.Tags.FirstAsync(t => t.Name == "Souls-like");
 
-            var witcherFranchise = await context.Franchises.FirstAsync(f => f.Name == "The Witcher");
-            var zeldaFranchise = await context.Franchises.FirstAsync(f => f.Name == "The Legend of Zelda");
+            var soulsFranchise = await context.Franchises.FirstAsync(f => f.Name.Contains("Dark Souls"));
+            var zeldaFranchise = await context.Franchises.FirstAsync(f => f.Name.Contains("Zelda"));
+            var mainSeries = await context.Series.FirstAsync(s => s.Name == "Main Series");
 
-            var mainSeries = await context.Series.FirstAsync(s => s.Name == "Main Entry");
-
-            var games = new List<Game>
+            var eldenRing = new Game
             {
-                new()
-                {
-                    Title = "The Witcher 3: Wild Hunt",
-                    AlternateTitles = "Witcher 3, wild hunt",
-                    OriginalTitle = "Wiedźmin 3: Dziki Gon",
-                    Description = "The Witcher: Wild Hunt is a story-driven, next-generation open world role-playing game set in a visually stunning fantasy universe full of meaningful choices and impactful consequences.",
-                    Notes = "Bought during GOG Summer Sale. Outstanding RPG, highly recommended.",
-                    PersonalNotes = "Completed twice, including Hearts of Stone and Blood and Wine expansions.",
-                    OwnGame = true,
-                    Wishlist = false,
-                    Backlog = false,
-                    PhysicalCopy = false,
-                    DigitalCopy = true,
-                    CollectorsEdition = false,
-                    SpecialEdition = true,
-                    PurchaseDate = new DateTimeOffset(2018, 6, 20, 0, 0, 0, TimeSpan.Zero),
-                    PurchasePrice = 14.99m,
-                    Currency = "USD",
-                    StorePurchasedFrom = "GOG",
-                    PurchaseRegion = "Global",
-                    Gifted = false,
-                    StartedPlayingDate = new DateTimeOffset(2018, 6, 22, 0, 0, 0, TimeSpan.Zero),
-                    CompletedDate = new DateTimeOffset(2018, 8, 15, 0, 0, 0, TimeSpan.Zero),
-                    LastPlayedDate = new DateTimeOffset(2025, 12, 25, 0, 0, 0, TimeSpan.Zero),
-                    HoursPlayed = 154.5,
-                    CompletionStatus = CompletionStatus.Completed100,
-                    PersonalRating = 10,
-                    CommunityRating = 9.8,
-                    CriticRating = 9.3,
-                    ReleaseDate = new DateTimeOffset(2015, 5, 19, 0, 0, 0, TimeSpan.Zero),
-                    EsrbRating = "M",
-                    PegiRating = "18",
-                    MetacriticScore = 93,
-                    OpenCriticScore = 92,
-                    MultiplayerSupport = false,
-                    CoopSupport = false,
-                    VrSupport = false,
-                    CrossplaySupport = false,
-                    CloudSaveSupport = true,
-                    ControllerSupport = true,
-                    SteamDeckCompatibility = "Verified",
-                    AchievementCount = 78,
-                    DlcCount = 16,
-                    ExpansionCount = 2,
-                    UserId = adminUser?.Id ?? "System",
-                    FranchiseId = witcherFranchise.Id,
-                    SeriesId = mainSeries.Id,
-                    Platforms = new List<Platform> { pc, deck },
-                    DigitalServices = new List<DigitalService> { gog },
-                    Developers = new List<Developer> { cdpr },
-                    Publishers = new List<Publisher> { cdprPub },
-                    Genres = new List<Genre> { rpg },
-                    Themes = new List<Theme> { fantasy },
-                    Tags = new List<Tag> { sp, ow }
-                },
-                new()
-                {
-                    Title = "Elden Ring",
-                    OriginalTitle = "エルデンリング",
-                    Description = "Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between.",
-                    Notes = "Pre-ordered on Steam. Masterpiece of open-world design.",
-                    OwnGame = true,
-                    Wishlist = false,
-                    Backlog = false,
-                    PhysicalCopy = false,
-                    DigitalCopy = true,
-                    CollectorsEdition = false,
-                    SpecialEdition = false,
-                    PurchaseDate = new DateTimeOffset(2022, 2, 24, 0, 0, 0, TimeSpan.Zero),
-                    PurchasePrice = 59.99m,
-                    Currency = "USD",
-                    StorePurchasedFrom = "Steam",
-                    PurchaseRegion = "Global",
-                    Gifted = false,
-                    StartedPlayingDate = new DateTimeOffset(2022, 2, 25, 0, 0, 0, TimeSpan.Zero),
-                    LastPlayedDate = new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero),
-                    HoursPlayed = 85.0,
-                    CompletionStatus = CompletionStatus.Playing,
-                    PersonalRating = 9.5,
-                    CommunityRating = 9.5,
-                    CriticRating = 9.6,
-                    ReleaseDate = new DateTimeOffset(2022, 2, 25, 0, 0, 0, TimeSpan.Zero),
-                    EsrbRating = "M",
-                    PegiRating = "16",
-                    MetacriticScore = 96,
-                    OpenCriticScore = 95,
-                    MultiplayerSupport = true,
-                    CoopSupport = true,
-                    VrSupport = false,
-                    CrossplaySupport = false,
-                    CloudSaveSupport = true,
-                    ControllerSupport = true,
-                    SteamDeckCompatibility = "Verified",
-                    AchievementCount = 42,
-                    DlcCount = 1,
-                    ExpansionCount = 0,
-                    UserId = adminUser?.Id ?? "System",
-                    SeriesId = mainSeries.Id,
-                    Platforms = new List<Platform> { pc, ps5 },
-                    DigitalServices = new List<DigitalService> { steam },
-                    Developers = new List<Developer> { fromsoft },
-                    Publishers = new List<Publisher> { bandai },
-                    Genres = new List<Genre> { rpg, action },
-                    Themes = new List<Theme> { fantasy },
-                    Tags = new List<Tag> { sp, ow }
-                },
-                new()
-                {
-                    Title = "The Legend of Zelda: Breath of the Wild",
-                    Description = "Forget everything you know about The Legend of Zelda games. Step into a world of discovery, exploration, and adventure in The Legend of Zelda: Breath of the Wild, a boundary-breaking new game in the acclaimed series.",
-                    Notes = "Physical copy bought with Switch console.",
-                    OwnGame = true,
-                    Wishlist = false,
-                    Backlog = false,
-                    PhysicalCopy = true,
-                    DigitalCopy = false,
-                    CollectorsEdition = false,
-                    SpecialEdition = false,
-                    PurchaseDate = new DateTimeOffset(2017, 3, 3, 0, 0, 0, TimeSpan.Zero),
-                    PurchasePrice = 59.99m,
-                    Currency = "USD",
-                    StorePurchasedFrom = "Amazon",
-                    Gifted = false,
-                    StartedPlayingDate = new DateTimeOffset(2017, 3, 4, 0, 0, 0, TimeSpan.Zero),
-                    CompletedDate = new DateTimeOffset(2017, 4, 15, 0, 0, 0, TimeSpan.Zero),
-                    LastPlayedDate = new DateTimeOffset(2020, 5, 20, 0, 0, 0, TimeSpan.Zero),
-                    HoursPlayed = 120.0,
-                    CompletionStatus = CompletionStatus.Completed,
-                    PersonalRating = 9.5,
-                    CommunityRating = 9.6,
-                    CriticRating = 9.7,
-                    ReleaseDate = new DateTimeOffset(2017, 3, 3, 0, 0, 0, TimeSpan.Zero),
-                    EsrbRating = "E10+",
-                    PegiRating = "12",
-                    MetacriticScore = 97,
-                    OpenCriticScore = 96,
-                    MultiplayerSupport = false,
-                    CoopSupport = false,
-                    VrSupport = false,
-                    CrossplaySupport = false,
-                    CloudSaveSupport = true,
-                    ControllerSupport = true,
-                    SteamDeckCompatibility = "Unsupported",
-                    UserId = adminUser?.Id ?? "System",
-                    FranchiseId = zeldaFranchise.Id,
-                    SeriesId = mainSeries.Id,
-                    Platforms = new List<Platform> { switchPlat },
-                    Developers = new List<Developer> { nintendo },
-                    Publishers = new List<Publisher> { nintendoPub },
-                    Genres = new List<Genre> { adventure, action },
-                    Themes = new List<Theme> { fantasy },
-                    Tags = new List<Tag> { sp, ow }
-                },
-                new()
-                {
-                    Title = "Cyberpunk 2077",
-                    Description = "Cyberpunk 2077 is an open-world, action-adventure RPG set in the megalopolis of Night City, where you play as a cyberpunk mercenary wrapped up in a do-or-die fight for survival.",
-                    Notes = "Steam digital download key.",
-                    OwnGame = true,
-                    Wishlist = false,
-                    Backlog = true,
-                    PhysicalCopy = false,
-                    DigitalCopy = true,
-                    CollectorsEdition = false,
-                    SpecialEdition = false,
-                    PurchaseDate = new DateTimeOffset(2020, 12, 10, 0, 0, 0, TimeSpan.Zero),
-                    PurchasePrice = 29.99m,
-                    Currency = "USD",
-                    StorePurchasedFrom = "Steam",
-                    Gifted = false,
-                    StartedPlayingDate = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero),
-                    LastPlayedDate = new DateTimeOffset(2021, 1, 5, 0, 0, 0, TimeSpan.Zero),
-                    HoursPlayed = 4.5,
-                    CompletionStatus = CompletionStatus.OnHold,
-                    PersonalRating = 7.0,
-                    CommunityRating = 8.5,
-                    CriticRating = 8.6,
-                    ReleaseDate = new DateTimeOffset(2020, 12, 10, 0, 0, 0, TimeSpan.Zero),
-                    EsrbRating = "M",
-                    PegiRating = "18",
-                    MetacriticScore = 86,
-                    OpenCriticScore = 82,
-                    UserId = adminUser?.Id ?? "System",
-                    Platforms = new List<Platform> { pc, deck },
-                    DigitalServices = new List<DigitalService> { steam },
-                    Developers = new List<Developer> { cdpr },
-                    Publishers = new List<Publisher> { cdprPub },
-                    Genres = new List<Genre> { rpg, action },
-                    Themes = new List<Theme> { cyberpunkTheme, sciFi },
-                    Tags = new List<Tag> { sp, ow }
-                }
+                Title = "Elden Ring",
+                Description = "THE NEW FANTASY ACTION RPG. Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between.",
+                ReleaseDate = new DateTimeOffset(2022, 2, 25, 0, 0, 0, TimeSpan.Zero),
+                CommunityRating = 9.5,
+                CriticRating = 9.6,
+                EsrbRating = "M",
+                PegiRating = "16",
+                MetacriticScore = 96,
+                OpenCriticScore = 95,
+                MultiplayerSupport = true,
+                CoopSupport = true,
+                VrSupport = false,
+                CrossplaySupport = false,
+                CloudSaveSupport = true,
+                ControllerSupport = true,
+                SteamDeckCompatibility = "Verified",
+                AchievementCount = 42,
+                DlcCount = 1,
+                FranchiseId = soulsFranchise.Id,
+                SeriesId = mainSeries.Id,
+                Platforms = new List<Platform> { pc, ps5 },
+                DigitalServices = new List<DigitalService> { steam },
+                Developers = new List<Developer> { fromsoft },
+                Publishers = new List<Publisher> { bandai },
+                Genres = new List<Genre> { rpg, action },
+                Themes = new List<Theme> { fantasy },
+                Tags = new List<Tag> { sp, ow, souls }
             };
 
-            await context.Games.AddRangeAsync(games);
-
-            // Let's copy the same games to normalUser to give them seed data too!
-            foreach (var g in games)
+            var zelda = new Game
             {
-                var userGameCopy = new Game
+                Title = "The Legend of Zelda: Breath of the Wild",
+                Description = "Forget everything you know about The Legend of Zelda games. Step into a world of discovery, exploration, and adventure in The Legend of Zelda: Breath of the Wild.",
+                ReleaseDate = new DateTimeOffset(2017, 3, 3, 0, 0, 0, TimeSpan.Zero),
+                CommunityRating = 9.6,
+                CriticRating = 9.7,
+                EsrbRating = "E10+",
+                PegiRating = "12",
+                MetacriticScore = 97,
+                OpenCriticScore = 96,
+                MultiplayerSupport = false,
+                ControllerSupport = true,
+                SteamDeckCompatibility = "Unsupported",
+                FranchiseId = zeldaFranchise.Id,
+                SeriesId = mainSeries.Id,
+                Platforms = new List<Platform> { switchPlat },
+                Developers = new List<Developer> { nintendo },
+                Publishers = new List<Publisher> { nintendoPub },
+                Genres = new List<Genre> { adventure, action },
+                Themes = new List<Theme> { fantasy },
+                Tags = new List<Tag> { sp, ow }
+            };
+
+            var cyberpunk = new Game
+            {
+                Title = "Cyberpunk 2077",
+                Description = "Cyberpunk 2077 is an open-world, action-adventure RPG set in the megalopolis of Night City, where you play as a cyberpunk mercenary wrapped up in a do-or-die fight for survival.",
+                ReleaseDate = new DateTimeOffset(2020, 12, 10, 0, 0, 0, TimeSpan.Zero),
+                CommunityRating = 8.5,
+                CriticRating = 8.6,
+                EsrbRating = "M",
+                PegiRating = "18",
+                MetacriticScore = 86,
+                OpenCriticScore = 82,
+                Platforms = new List<Platform> { pc, ps5, deck },
+                DigitalServices = new List<DigitalService> { steam },
+                Developers = new List<Developer> { cdpr },
+                Publishers = new List<Publisher> { cdprPub },
+                Genres = new List<Genre> { rpg, action },
+                Themes = new List<Theme> { cyberpunkTheme, sciFi },
+                Tags = new List<Tag> { sp, ow }
+            };
+
+            await context.Games.AddRangeAsync(new[] { eldenRing, zelda, cyberpunk });
+            await context.SaveChangesAsync();
+
+            // Seed User Library Entries for admin and user
+            if (adminUser != null)
+            {
+                var adminLibrary = new List<UserLibraryEntry>
                 {
-                    Title = g.Title,
-                    AlternateTitles = g.AlternateTitles,
-                    OriginalTitle = g.OriginalTitle,
-                    Description = g.Description,
-                    Notes = g.Notes,
-                    PersonalNotes = g.PersonalNotes,
-                    OwnGame = g.OwnGame,
-                    Wishlist = g.Wishlist,
-                    Backlog = g.Backlog,
-                    PhysicalCopy = g.PhysicalCopy,
-                    DigitalCopy = g.DigitalCopy,
-                    CollectorsEdition = g.CollectorsEdition,
-                    SpecialEdition = g.SpecialEdition,
-                    PurchaseDate = g.PurchaseDate,
-                    PurchasePrice = g.PurchasePrice,
-                    Currency = g.Currency,
-                    StorePurchasedFrom = g.StorePurchasedFrom,
-                    Gifted = g.Gifted,
-                    StartedPlayingDate = g.StartedPlayingDate,
-                    CompletedDate = g.CompletedDate,
-                    LastPlayedDate = g.LastPlayedDate,
-                    HoursPlayed = g.HoursPlayed * 0.8, // Slightly different playtime
-                    CompletionStatus = g.CompletionStatus,
-                    PersonalRating = g.PersonalRating,
-                    CommunityRating = g.CommunityRating,
-                    CriticRating = g.CriticRating,
-                    ReleaseDate = g.ReleaseDate,
-                    EsrbRating = g.EsrbRating,
-                    PegiRating = g.PegiRating,
-                    MetacriticScore = g.MetacriticScore,
-                    OpenCriticScore = g.OpenCriticScore,
-                    UserId = normalUser?.Id ?? "UserSystem",
-                    FranchiseId = g.FranchiseId,
-                    SeriesId = g.SeriesId,
-                    Platforms = g.Platforms.ToList(),
-                    DigitalServices = g.DigitalServices.ToList(),
-                    Developers = g.Developers.ToList(),
-                    Publishers = g.Publishers.ToList(),
-                    Genres = g.Genres.ToList(),
-                    Themes = g.Themes.ToList(),
-                    Tags = g.Tags.ToList()
+                    new()
+                    {
+                        UserId = adminUser.Id,
+                        GameId = eldenRing.Id,
+                        OwnGame = true,
+                        PurchaseDate = new DateTimeOffset(2022, 2, 25, 0, 0, 0, TimeSpan.Zero),
+                        PurchasePrice = 59.99m,
+                        Currency = "USD",
+                        StorePurchasedFrom = "Steam",
+                        HoursPlayed = 94.5,
+                        CompletionStatus = CompletionStatus.Completed,
+                        PersonalRating = 10.0,
+                        PersonalNotes = "Masterpiece from FromSoft.",
+                        Platforms = new List<Platform> { pc, ps5 },
+                        DigitalServices = new List<DigitalService> { steam }
+                    },
+                    new()
+                    {
+                        UserId = adminUser.Id,
+                        GameId = zelda.Id,
+                        OwnGame = true,
+                        PhysicalCopy = true,
+                        PurchaseDate = new DateTimeOffset(2017, 3, 3, 0, 0, 0, TimeSpan.Zero),
+                        PurchasePrice = 59.99m,
+                        Currency = "USD",
+                        StorePurchasedFrom = "Amazon",
+                        HoursPlayed = 120.0,
+                        CompletionStatus = CompletionStatus.Completed,
+                        PersonalRating = 9.5,
+                        Platforms = new List<Platform> { switchPlat }
+                    },
+                    new()
+                    {
+                        UserId = adminUser.Id,
+                        GameId = cyberpunk.Id,
+                        OwnGame = true,
+                        DigitalCopy = true,
+                        Backlog = true,
+                        PurchaseDate = new DateTimeOffset(2020, 12, 10, 0, 0, 0, TimeSpan.Zero),
+                        PurchasePrice = 29.99m,
+                        Currency = "USD",
+                        StorePurchasedFrom = "Steam",
+                        HoursPlayed = 4.5,
+                        CompletionStatus = CompletionStatus.OnHold,
+                        PersonalRating = 7.0,
+                        Platforms = new List<Platform> { pc },
+                        DigitalServices = new List<DigitalService> { steam }
+                    }
                 };
-                await context.Games.AddAsync(userGameCopy);
+
+                await context.UserLibraryEntries.AddRangeAsync(adminLibrary);
+            }
+
+            if (normalUser != null)
+            {
+                var userLibrary = new List<UserLibraryEntry>
+                {
+                    new()
+                    {
+                        UserId = normalUser.Id,
+                        GameId = eldenRing.Id,
+                        OwnGame = true,
+                        HoursPlayed = 45.0,
+                        CompletionStatus = CompletionStatus.Playing,
+                        PersonalRating = 9.0,
+                        Platforms = new List<Platform> { pc },
+                        DigitalServices = new List<DigitalService> { steam }
+                    },
+                    new()
+                    {
+                        UserId = normalUser.Id,
+                        GameId = cyberpunk.Id,
+                        OwnGame = true,
+                        HoursPlayed = 12.0,
+                        CompletionStatus = CompletionStatus.Playing,
+                        PersonalRating = 8.5,
+                        Platforms = new List<Platform> { ps5 }
+                    }
+                };
+
+                await context.UserLibraryEntries.AddRangeAsync(userLibrary);
             }
 
             await context.SaveChangesAsync();

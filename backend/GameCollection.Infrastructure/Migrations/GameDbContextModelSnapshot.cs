@@ -17,7 +17,7 @@ namespace GameCollection.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.27")
+                .HasAnnotation("ProductVersion", "8.0.30")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -50,6 +50,113 @@ namespace GameCollection.Infrastructure.Migrations
                     b.HasIndex("GamesId");
 
                     b.ToTable("GameServices", (string)null);
+                });
+
+            modelBuilder.Entity("DigitalServiceUserLibraryEntry", b =>
+                {
+                    b.Property<int>("DigitalServicesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserLibraryEntryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DigitalServicesId", "UserLibraryEntryId");
+
+                    b.HasIndex("UserLibraryEntryId");
+
+                    b.ToTable("UserLibraryServices", (string)null);
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.ApplicationRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSuperAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSystemRole")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("UpdatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ApplicationRoles");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.ApplicationRolePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PermissionId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("ApplicationRolePermissions");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.ApplicationUserRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId", "RoleId")
+                        .IsUnique();
+
+                    b.ToTable("ApplicationUserRoles");
                 });
 
             modelBuilder.Entity("GameCollection.Domain.Entities.Developer", b =>
@@ -189,9 +296,6 @@ namespace GameCollection.Infrastructure.Migrations
                     b.Property<string>("Artwork")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Backlog")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Banner")
                         .HasColumnType("nvarchar(max)");
 
@@ -201,17 +305,8 @@ namespace GameCollection.Infrastructure.Migrations
                     b.Property<bool>("CloudSaveSupport")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("CollectorsEdition")
-                        .HasColumnType("bit");
-
                     b.Property<double?>("CommunityRating")
                         .HasColumnType("float");
-
-                    b.Property<DateTimeOffset?>("CompletedDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("CompletionStatus")
-                        .HasColumnType("int");
 
                     b.Property<bool>("ControllerSupport")
                         .HasColumnType("bit");
@@ -234,14 +329,8 @@ namespace GameCollection.Infrastructure.Migrations
                     b.Property<bool>("CrossplaySupport")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Currency")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("DigitalCopy")
-                        .HasColumnType("bit");
 
                     b.Property<int>("DlcCount")
                         .HasColumnType("int");
@@ -264,17 +353,8 @@ namespace GameCollection.Infrastructure.Migrations
                     b.Property<string>("GameplayUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Gifted")
-                        .HasColumnType("bit");
-
-                    b.Property<double>("HoursPlayed")
-                        .HasColumnType("float");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LastPlayedDate")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Logo")
                         .HasColumnType("nvarchar(max)");
@@ -297,32 +377,7 @@ namespace GameCollection.Infrastructure.Migrations
                     b.Property<string>("OriginalTitle")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("OwnGame")
-                        .HasColumnType("bit");
-
                     b.Property<string>("PegiRating")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PersonalNotes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("PersonalRating")
-                        .HasColumnType("float");
-
-                    b.Property<bool>("PhysicalCopy")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("PurchaseDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<decimal?>("PurchasePrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("PurchaseRegion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReceiptReference")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("ReleaseDate")
@@ -334,16 +389,7 @@ namespace GameCollection.Infrastructure.Migrations
                     b.Property<int?>("SeriesId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("SpecialEdition")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("StartedPlayingDate")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<string>("SteamDeckCompatibility")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StorePurchasedFrom")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
@@ -359,14 +405,7 @@ namespace GameCollection.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("UpdatedDate")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("VrSupport")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Wishlist")
                         .HasColumnType("bit");
 
                     b.Property<string>("YoutubeLinks")
@@ -379,6 +418,71 @@ namespace GameCollection.Infrastructure.Migrations
                     b.HasIndex("SeriesId");
 
                     b.ToTable("Games");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.GameRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdditionalInformation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ApproximateReleaseYear")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("CreatedGameId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GameTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Links")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Platforms")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequestedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReviewNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("ReviewedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ReviewedByUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("UpdatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedGameId");
+
+                    b.ToTable("GameRequests");
                 });
 
             modelBuilder.Entity("GameCollection.Domain.Entities.Genre", b =>
@@ -414,6 +518,34 @@ namespace GameCollection.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Genres");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.Permission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("GameCollection.Domain.Entities.Platform", b =>
@@ -607,6 +739,107 @@ namespace GameCollection.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Themes");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.UserLibraryEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Backlog")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CollectorsEdition")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("CompletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("CompletionStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("DigitalCopy")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Gifted")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("HoursPlayed")
+                        .HasColumnType("float");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LastPlayedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("OwnGame")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PersonalNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("PersonalRating")
+                        .HasColumnType("float");
+
+                    b.Property<bool>("PhysicalCopy")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("PurchaseDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("PurchasePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PurchaseRegion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiptReference")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("SpecialEdition")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("StartedPlayingDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("StorePurchasedFrom")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("UpdatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Wishlist")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("UserLibraryEntries");
                 });
 
             modelBuilder.Entity("GameGenre", b =>
@@ -882,6 +1115,21 @@ namespace GameCollection.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("PlatformUserLibraryEntry", b =>
+                {
+                    b.Property<int>("PlatformsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserLibraryEntryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PlatformsId", "UserLibraryEntryId");
+
+                    b.HasIndex("UserLibraryEntryId");
+
+                    b.ToTable("UserLibraryPlatforms", (string)null);
+                });
+
             modelBuilder.Entity("DeveloperGame", b =>
                 {
                     b.HasOne("GameCollection.Domain.Entities.Developer", null)
@@ -912,6 +1160,51 @@ namespace GameCollection.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DigitalServiceUserLibraryEntry", b =>
+                {
+                    b.HasOne("GameCollection.Domain.Entities.DigitalService", null)
+                        .WithMany()
+                        .HasForeignKey("DigitalServicesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GameCollection.Domain.Entities.UserLibraryEntry", null)
+                        .WithMany()
+                        .HasForeignKey("UserLibraryEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.ApplicationRolePermission", b =>
+                {
+                    b.HasOne("GameCollection.Domain.Entities.Permission", "Permission")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GameCollection.Domain.Entities.ApplicationRole", "Role")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permission");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.ApplicationUserRole", b =>
+                {
+                    b.HasOne("GameCollection.Domain.Entities.ApplicationRole", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("GameCollection.Domain.Entities.Game", b =>
                 {
                     b.HasOne("GameCollection.Domain.Entities.Franchise", "Franchise")
@@ -925,6 +1218,27 @@ namespace GameCollection.Infrastructure.Migrations
                     b.Navigation("Franchise");
 
                     b.Navigation("Series");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.GameRequest", b =>
+                {
+                    b.HasOne("GameCollection.Domain.Entities.Game", "CreatedGame")
+                        .WithMany()
+                        .HasForeignKey("CreatedGameId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CreatedGame");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.UserLibraryEntry", b =>
+                {
+                    b.HasOne("GameCollection.Domain.Entities.Game", "Game")
+                        .WithMany("LibraryEntries")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("GameGenre", b =>
@@ -1053,9 +1367,41 @@ namespace GameCollection.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PlatformUserLibraryEntry", b =>
+                {
+                    b.HasOne("GameCollection.Domain.Entities.Platform", null)
+                        .WithMany()
+                        .HasForeignKey("PlatformsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GameCollection.Domain.Entities.UserLibraryEntry", null)
+                        .WithMany()
+                        .HasForeignKey("UserLibraryEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.ApplicationRole", b =>
+                {
+                    b.Navigation("RolePermissions");
+
+                    b.Navigation("UserRoles");
+                });
+
             modelBuilder.Entity("GameCollection.Domain.Entities.Franchise", b =>
                 {
                     b.Navigation("Games");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.Game", b =>
+                {
+                    b.Navigation("LibraryEntries");
+                });
+
+            modelBuilder.Entity("GameCollection.Domain.Entities.Permission", b =>
+                {
+                    b.Navigation("RolePermissions");
                 });
 
             modelBuilder.Entity("GameCollection.Domain.Entities.Series", b =>

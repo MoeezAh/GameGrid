@@ -83,12 +83,12 @@ const Library = () => {
         ownGame: ownGameFilter
       };
 
-      const response = await api.get('/games', { params });
+      const response = await api.get('/libraries', { params });
       setGames(response.data.items || []);
       setTotalPages(response.data.totalPages || 0);
       setTotalCount(response.data.totalCount || 0);
     } catch (err) {
-      console.error('Failed to retrieve games collection', err);
+      console.error('Failed to retrieve personal library collection', err);
     } finally {
       setLoading(false);
     }
@@ -128,12 +128,12 @@ const Library = () => {
   };
 
   const deleteGame = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this game from your collection?')) return;
+    if (!window.confirm('Are you sure you want to remove this game from your personal library?')) return;
     try {
-      await api.delete(`/games/${id}`);
+      await api.delete(`/libraries/${id}`);
       fetchLibrary();
     } catch (err) {
-      alert('Failed to delete game: ' + (err.message || 'Server error'));
+      alert('Failed to remove game from library: ' + (err.message || 'Server error'));
     }
   };
 
@@ -164,9 +164,9 @@ const Library = () => {
             <i className="bi bi-funnel-fill me-1"></i> {showFilters ? 'Hide Filters' : 'Show Filters'}
           </button>
           
-          <Link to="/games/add" className="btn btn-sm btn-premium-purple d-flex align-items-center gap-2">
-            <i className="bi bi-plus-lg"></i>
-            <span>Add Game</span>
+          <Link to="/catalog" className="btn btn-sm btn-premium-purple d-flex align-items-center gap-2">
+            <i className="bi bi-compass"></i>
+            <span>Browse Catalog</span>
           </Link>
         </div>
       </div>

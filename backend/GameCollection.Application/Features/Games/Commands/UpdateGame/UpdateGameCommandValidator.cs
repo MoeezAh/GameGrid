@@ -7,18 +7,19 @@ public class UpdateGameCommandValidator : AbstractValidator<UpdateGameCommand>
     public UpdateGameCommandValidator()
     {
         RuleFor(v => v.Id)
-            .NotEmpty().WithMessage("Game ID is required.");
+            .GreaterThan(0).WithMessage("Valid Game ID is required.");
 
         RuleFor(v => v.Title)
             .NotEmpty().WithMessage("Title is required.")
             .MaximumLength(200).WithMessage("Title must not exceed 200 characters.");
 
-        RuleFor(v => v.HoursPlayed)
-            .GreaterThanOrEqualTo(0).WithMessage("Hours played must be a non-negative number.");
+        RuleFor(v => v.CommunityRating)
+            .InclusiveBetween(0, 10).When(v => v.CommunityRating.HasValue)
+            .WithMessage("Community rating must be between 0 and 10.");
 
-        RuleFor(v => v.PersonalRating)
-            .InclusiveBetween(0, 10).When(v => v.PersonalRating.HasValue)
-            .WithMessage("Personal rating must be between 0 and 10.");
+        RuleFor(v => v.CriticRating)
+            .InclusiveBetween(0, 10).When(v => v.CriticRating.HasValue)
+            .WithMessage("Critic rating must be between 0 and 10.");
 
         RuleFor(v => v.MetacriticScore)
             .InclusiveBetween(0, 100).When(v => v.MetacriticScore.HasValue)
