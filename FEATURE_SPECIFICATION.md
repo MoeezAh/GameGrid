@@ -38,10 +38,10 @@ The platform is secured by a dynamic, configurable **Role-Based Access Control (
 
 | Layer | Technologies & Frameworks | Key Responsibilities |
 | :--- | :--- | :--- |
-| **Frontend Client** | React 18, Vite, Bootstrap 5 Icons, Recharts, Axios, React Router v6 | Glassmorphic Dark/Light UI, dynamic permission routing, real-time analytics charts, multi-view catalog exploration. |
-| **API & Security** | ASP.NET Core 8 Web API, MediatR (CQRS), FluentValidation, AutoMapper | RESTful API endpoints, dynamic permission authorization handlers, JWT bearer authentication. |
-| **Business Logic** | .NET 8 Class Library (Clean Architecture Application Layer) | Commands, Queries, Domain Validation, Business Rules, Permission Services. |
-| **Data & Persistence** | EF Core 8, SQLite / SQL Server, Code-First Migrations | Relational schema, soft delete query filters, many-to-many junction tables, database seeding. |
+| **Frontend Client** | React 19, Vite 8, Bootstrap 5 Icons, Recharts 3, Axios, React Router v7 | Glassmorphic Dark/Light UI, dynamic permission routing, real-time analytics charts, multi-view catalog exploration. |
+| **API & Security** | ASP.NET Core 10 Web API, MediatR (CQRS), FluentValidation, AutoMapper | RESTful API endpoints, dynamic permission authorization handlers, JWT bearer authentication. |
+| **Business Logic** | .NET 10 Class Library (Clean Architecture Application Layer) | Commands, Queries, Domain Validation, Business Rules, Permission Services. |
+| **Data & Persistence** | EF Core 10, SQLite / SQL Server, Code-First Migrations | Relational schema, soft delete query filters, many-to-many junction tables, database seeding. |
 | **Storage & Assets** | ASP.NET Core Static Web Assets | Local file upload handler with format verification (covers, banners, screenshots). |
 
 ---

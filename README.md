@@ -25,8 +25,8 @@ Antigravity is a complete, production-ready, full-stack game collection manager.
 ## 🛠️ Technology Stack
 
 ### Backend
-- **ASP.NET Core Web API 8.0 (LTS)**: Clean Architecture with Domain-Driven Design (DDD) principles.
-- **Entity Framework Core 8.0**: Database ORM mapping SQL Server databases with soft-delete global query filters.
+- **ASP.NET Core Web API 10.0**: Clean Architecture with Domain-Driven Design (DDD) principles.
+- **Entity Framework Core 10.0**: Database ORM mapping SQL Server databases with soft-delete global query filters.
 - **Dynamic Permission Authorization**: Custom `PermissionPolicyProvider`, `HasPermission` attribute, and `PermissionAuthorizationHandler` supporting runtime role definitions and Super Admin bypass.
 - **JWT Bearer Token Authentication**: Secure token verification containing user roles and dynamic permission claims.
 - **MediatR**: CQRS design pattern separating Queries from Command updates.
@@ -36,10 +36,10 @@ Antigravity is a complete, production-ready, full-stack game collection manager.
 - **Serilog**: Structured console request logging.
 
 ### Frontend
-- **React (latest stable)** + **Vite**: Rapid Hot Module Replacement (HMR) development server.
+- **React 19** + **Vite 8**: Rapid Hot Module Replacement (HMR) development server.
 - **Bootstrap 5 & Icons**: Modern dark theme CSS variables matching premium styling.
-- **Recharts**: Responsive canvas SVGs illustrating library data charts.
-- **React Router 6**: Client-side single page path routing with permission and role guards (`PermissionRoute`, `SuperAdminRoute`, `ProtectedRoute`).
+- **Recharts 3**: Responsive canvas SVGs illustrating library data charts.
+- **React Router 7**: Client-side single page path routing with permission and role guards (`PermissionRoute`, `SuperAdminRoute`, `ProtectedRoute`).
 - **Axios**: Token interceptors, global response handlers, and request mappings.
 
 ---
@@ -70,7 +70,7 @@ Antigravity is a complete, production-ready, full-stack game collection manager.
 ## 🏁 Getting Started
 
 ### 📋 Prerequisites
-- [.NET SDK 8.0 / 10.0](https://dotnet.microsoft.com/download)
+- [.NET SDK 10.0](https://dotnet.microsoft.com/download)
 - [Node.js (v18+)](https://nodejs.org)
 - [SQL Server](https://www.microsoft.com/sql-server) (LocalDB/Express)
 - [Docker & Docker Compose](https://www.docker.com) (Optional)
