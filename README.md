@@ -2,10 +2,17 @@
 
 Antigravity is a complete, production-ready, full-stack game collection manager. The application features a premium dark-themed visual layout inspired by modern launchers like Steam, GOG Galaxy, and Xbox App, and provides users with powerful tools to catalog their library, track play hours, manage storefront connections, and view collection statistics charts.
 
+> [!TIP]
+> 📖 **Comprehensive System & Feature Documentation**
+> For an exhaustive, high-level to low-level breakdown of every subsystem, user role access matrix, API endpoints, and entity-relationship models, please refer to the **[Feature & Technical Specification](FEATURE_SPECIFICATION.md)**.
+
 ---
 
 ## 🚀 Features
 
+- **Generic Role-Based Access Control (RBAC)**: Fully configurable authorization where actions are controlled by discrete permissions. Super Admin can define custom roles and toggle granular permission matrices dynamically.
+- **Central Catalog vs. Personal Library Decoupling**: Central authoritative game database curated by authorized users, while personal user libraries track individual ownership, ratings, playtime, and specific owned platforms.
+- **Game Requests Workflow**: Community game contribution workflow with reviewer queue, **catalog duplicate similarity checks**, and one-click catalog approval or feedback-driven rejection.
 - **KPI Analytics Dashboard**: Track total games owned, completion percentage, backlog status, recently added, and most played items.
 - **Data Charts**: Visually explore your catalog distribution using interactive Recharts components for platforms, genres, status, and release year trends.
 - **Multiple Views**: Seamlessly switch between Grid view, list tabular layout, large Card info view, and Gallery cover wall.
@@ -19,9 +26,9 @@ Antigravity is a complete, production-ready, full-stack game collection manager.
 
 ### Backend
 - **ASP.NET Core Web API 8.0 (LTS)**: Clean Architecture with Domain-Driven Design (DDD) principles.
-- **Entity Framework Core 8.0**: Database ORM mapping SQL Server databases.
-- **ASP.NET Identity Core**: Built-in authorization, role assignment (`Administrator`, `User`), and account credential hashes.
-- **JWT Bearer Token Authentication**: Secure token verification for API calls.
+- **Entity Framework Core 8.0**: Database ORM mapping SQL Server databases with soft-delete global query filters.
+- **Dynamic Permission Authorization**: Custom `PermissionPolicyProvider`, `HasPermission` attribute, and `PermissionAuthorizationHandler` supporting runtime role definitions and Super Admin bypass.
+- **JWT Bearer Token Authentication**: Secure token verification containing user roles and dynamic permission claims.
 - **MediatR**: CQRS design pattern separating Queries from Command updates.
 - **FluentValidation**: Request pipeline behaviors executing automatic input check validations.
 - **AutoMapper**: DTO mapping profiles translating domain models.
@@ -32,7 +39,7 @@ Antigravity is a complete, production-ready, full-stack game collection manager.
 - **React (latest stable)** + **Vite**: Rapid Hot Module Replacement (HMR) development server.
 - **Bootstrap 5 & Icons**: Modern dark theme CSS variables matching premium styling.
 - **Recharts**: Responsive canvas SVGs illustrating library data charts.
-- **React Router 6**: Client-side single page path routing, protected guard checks.
+- **React Router 6**: Client-side single page path routing with permission and role guards (`PermissionRoute`, `SuperAdminRoute`, `ProtectedRoute`).
 - **Axios**: Token interceptors, global response handlers, and request mappings.
 
 ---
@@ -40,19 +47,20 @@ Antigravity is a complete, production-ready, full-stack game collection manager.
 ## 📁 Architecture Overview
 
 ```
+├── FEATURE_SPECIFICATION.md              # Detailed technical & feature specification document
 ├── backend/                              # ASP.NET Core Solution
 │   ├── GameCollection.slnx               # Modern XML Solution format
-│   ├── GameCollection.Domain/            # Domain Entities, Repositories Interfaces
-│   ├── GameCollection.Application/       # DTOs, Mappings, CQRS Commands/Queries, Validators
-│   ├── GameCollection.Infrastructure/    # DBContext, Identity, Local Uploads, Migrations
-│   └── GameCollection.API/               # Controllers, Middlewares, Program Bootstrapper
+│   ├── GameCollection.Domain/            # Domain Entities, RBAC models, Enums, Interfaces
+│   ├── GameCollection.Application/       # DTOs, Mappings, CQRS Commands/Queries, Security
+│   ├── GameCollection.Infrastructure/    # DBContext, Identity, PermissionService, Migrations
+│   └── GameCollection.API/               # Controllers, Middlewares, Dynamic Auth Handlers
 │
 └── frontend/                             # React SPA Client
     ├── public/                           # Static assets
     └── src/
         ├── components/                   # Layout, RouteGuards, Common widgets
-        ├── context/                      # AuthContext session provider
-        ├── pages/                        # Dashboard, Library, GameForm, Profile, Admin CRUD
+        ├── context/                      # AuthContext session & permission provider
+        ├── pages/                        # Dashboard, Catalog, Library, GameForm, GameRequests, Admin CRUD
         ├── services/                     # Axios Client setup
         └── index.css                     # HSL Gaming Theme CSS styling
 ```
@@ -109,7 +117,6 @@ You can launch and debug both the ASP.NET Core API and the React frontend simult
    - Build and start the C# API project, serving over HTTPS and launching the **Swagger Documentation** page at `https://localhost:7214/swagger`.
    - Start the React/Vite development server, launching the **Frontend Web App** at `http://localhost:5173`.
 
-
 ---
 
 ### 🐳 Docker Compose Deployment (Single Command)
@@ -124,14 +131,16 @@ docker-compose up --build -d
 
 ---
 
-## 🔐 Credentials (Default Seed Data)
+## 🔐 Credentials & Default Roles (Seed Data)
 
 After running the system, use the following logins to test roles:
 
-| Username | Password | Role |
-| :--- | :--- | :--- |
-| **admin** | `Admin123!` | **Administrator, User** (CRUD Metadata enabled) |
-| **user** | `User123!` | **User** (Only views catalog data) |
+| Username | Password | Assigned Roles | Access Level |
+| :--- | :--- | :--- | :--- |
+| **admin** | `Admin123!` | **Super Admin, Admin** | Full system bypass, role creation, RBAC matrix, user management, and catalog curation. |
+| **user** | `User123!` | **User** | Central catalog browsing, personal library tracking, and game request submissions. |
+
+> See **[FEATURE_SPECIFICATION.md](FEATURE_SPECIFICATION.md)** for full details on configuring new roles (`Game Curator`, `Moderator`, custom roles) and permission matrices.
 
 ---
 
