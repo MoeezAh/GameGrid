@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GameCollection.Application.Features.Games.Commands.DeleteGame;
 
-public record DeleteGameCommand(int Id, string UserId) : IRequest<bool>;
+public record DeleteGameCommand(int Id) : IRequest<bool>;
 
 public class DeleteGameCommandHandler : IRequestHandler<DeleteGameCommand, bool>
 {
@@ -20,14 +20,10 @@ public class DeleteGameCommandHandler : IRequestHandler<DeleteGameCommand, bool>
 
     public async Task<bool> Handle(DeleteGameCommand request, CancellationToken cancellationToken)
     {
-        var game = await _unitOfWork.Repository<Game>().GetQueryable()
-            .FirstOrDefaultAsync(g => g.Id == request.Id && g.UserId == request.UserId, cancellationToken);
-
+        var game = await _unitOfWork.Repository<Game>().GetByIdAsync(request.Id);
         if (game == null) return false;
 
-        // Perform soft delete
         game.IsDeleted = true;
-        
         _unitOfWork.Repository<Game>().Update(game);
         await _unitOfWork.SaveChangesAsync();
 

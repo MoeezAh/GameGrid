@@ -1,57 +1,73 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api, { API_HOST } from '../services/api';
-
-const CompletionStatuses = [
-  { value: 0, label: 'Not Started', badgeClass: 'badge-status-notstarted' },
-  { value: 1, label: 'Playing', badgeClass: 'badge-status-playing' },
-  { value: 2, label: 'On Hold', badgeClass: 'badge-status-onhold' },
-  { value: 3, label: 'Completed', badgeClass: 'badge-status-completed' },
-  { value: 4, label: 'Dropped', badgeClass: 'badge-status-dropped' },
-  { value: 5, label: '100% Completed', badgeClass: 'badge-status-completed100' },
-  { value: 6, label: 'Replaying', badgeClass: 'badge-status-replaying' }
-];
+import { useAuth } from '../context/AuthContext';
 
 const GameDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
+
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [userSelectedPlatformIds, setUserSelectedPlatformIds] = useState([]);
+  const [addingToLibrary, setAddingToLibrary] = useState(false);
+  const [actionSuccess, setActionSuccess] = useState(null);
+
+  const fetchGame = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(`/games/${id}`);
+      setGame(response.data);
+    } catch (err) {
+      setError(err.message || 'Failed to retrieve game details.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchGame = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get(`/games/${id}`);
-        setGame(response.data);
-      } catch (err) {
-        setError(err.message || 'Failed to retrieve game details.');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchGame();
   }, [id]);
 
   const deleteGame = async () => {
-    if (!window.confirm('Are you sure you want to delete this game from your library?')) return;
+    if (!window.confirm('Are you sure you want to delete this game from the central catalog?')) return;
     try {
       await api.delete(`/games/${id}`);
-      navigate('/library');
+      navigate('/catalog');
     } catch (err) {
-      alert('Delete failed: ' + err.message);
+      alert('Delete failed: ' + (err.response?.data?.message || err.message));
     }
   };
 
-  const getStatusLabel = (statusValue) => {
-    const statusObj = CompletionStatuses.find(s => s.value === statusValue);
-    return statusObj ? statusObj.label : 'Unknown';
+  const handleToggleUserPlatform = (platformId) => {
+    if (userSelectedPlatformIds.includes(platformId)) {
+      setUserSelectedPlatformIds(userSelectedPlatformIds.filter(pid => pid !== platformId));
+    } else {
+      setUserSelectedPlatformIds([...userSelectedPlatformIds, platformId]);
+    }
   };
 
-  const getStatusBadgeClass = (statusValue) => {
-    const statusObj = CompletionStatuses.find(s => s.value === statusValue);
-    return statusObj ? statusObj.badgeClass : 'badge-status-notstarted';
+  const handleAddToLibrary = async (e) => {
+    e.preventDefault();
+    setAddingToLibrary(true);
+    try {
+      await api.post('/libraries', {
+        gameId: game.id,
+        platformIds: userSelectedPlatformIds,
+        ownGame: true
+      });
+      setShowAddModal(false);
+      setActionSuccess(`'${game.title}' added to your library!`);
+      fetchGame();
+      setTimeout(() => setActionSuccess(null), 4000);
+    } catch (err) {
+      alert('Failed to add to library: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setAddingToLibrary(false);
+    }
   };
 
   // Extract YouTube ID for trailer embedding
@@ -66,17 +82,17 @@ const GameDetail = () => {
   if (loading) {
     return (
       <div className="d-flex align-items-center justify-content-center py-5">
-        <div className="spinner-border" style={{ color: 'var(--accent-purple)' }} role="status"></div>
+        <div className="spinner-border text-primary" role="status"></div>
       </div>
     );
   }
 
   if (error || !game) {
     return (
-      <div className="alert-theme-danger p-4 rounded-3">
+      <div className="alert alert-danger p-4 rounded-3">
         <h4 className="mb-2">Error loading details</h4>
         <p className="mb-3">{error || 'Game not found.'}</p>
-        <Link to="/library" className="btn btn-premium-outline btn-sm">Back to Library</Link>
+        <Link to="/catalog" className="btn btn-outline-secondary btn-sm">Back to Catalog</Link>
       </div>
     );
   }
@@ -85,13 +101,20 @@ const GameDetail = () => {
 
   return (
     <div className="container-fluid py-2 fade-in">
+      {actionSuccess && (
+        <div className="alert alert-success d-flex align-items-center gap-2 mb-4">
+          <i className="bi bi-check-circle-fill fs-5"></i>
+          <div>{actionSuccess}</div>
+        </div>
+      )}
+
       {/* Top Banner Header block */}
       <div 
         className="position-relative rounded-4 overflow-hidden mb-4 d-flex align-items-end p-4 p-md-5"
         style={{
-          height: '350px',
+          minHeight: '350px',
           background: game.banner 
-            ? `linear-gradient(to top, rgba(11, 14, 20, 0.95), rgba(11, 14, 20, 0.3)), url(${API_HOST}${game.banner}) center/cover no-repeat`
+            ? `linear-gradient(to top, rgba(11, 14, 20, 0.95), rgba(11, 14, 20, 0.4)), url(${API_HOST}${game.banner}) center/cover no-repeat`
             : 'linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%)'
         }}
       >
@@ -99,79 +122,83 @@ const GameDetail = () => {
           {/* Cover image thumbnail */}
           <div className="rounded-3 overflow-hidden shadow-lg flex-shrink-0" style={{ width: '135px', height: '180px', border: '3px solid rgba(255,255,255,0.2)' }}>
             <img 
-              src={game.coverImage ? `${API_HOST}${game.coverImage}` : 'https://placehold.co/300x400/1b202c/909bb0?text=No+Cover'} 
+              src={game.coverImage ? (game.coverImage.startsWith('http') ? game.coverImage : `${API_HOST}${game.coverImage}`) : 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80'} 
               alt={game.title} 
               className="w-100 h-100 object-fit-cover"
-              onError={(e) => {e.target.src = 'https://placehold.co/300x400/1b202c/909bb0?text=No+Cover'}}
             />
           </div>
           
-          {/* Always white text over the dark banner overlay */}
           <div className="flex-grow-1" style={{ color: '#ffffff' }}>
             <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-              <span className={`badge ${getStatusBadgeClass(game.completionStatus)} px-3 py-2 fs-6`}>
-                {getStatusLabel(game.completionStatus)}
-              </span>
-              {game.ownGame && <span className="badge px-3 py-2" style={{ background: 'rgba(22,163,74,0.25)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.4)' }}>Owned</span>}
-              {game.wishlist && <span className="badge px-3 py-2" style={{ background: 'rgba(59,130,246,0.25)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.4)' }}>Wishlisted</span>}
-              {game.backlog && <span className="badge px-3 py-2" style={{ background: 'rgba(234,179,8,0.25)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.4)' }}>Backlog</span>}
+              {game.isInUserLibrary ? (
+                <span className="badge bg-primary px-3 py-2 fs-6">
+                  <i className="bi bi-check-circle-fill me-1"></i> In Your Library
+                </span>
+              ) : (
+                <span className="badge bg-secondary px-3 py-2 fs-6">Catalog Entry</span>
+              )}
+              {game.esrbRating && <span className="badge bg-dark-subtle text-body border px-2 py-1">ESRB: {game.esrbRating}</span>}
+              {game.pegiRating && <span className="badge bg-dark-subtle text-body border px-2 py-1">PEGI: {game.pegiRating}</span>}
             </div>
 
             <h1 className="display-4 fw-bold display-font mb-2" style={{ color: '#ffffff' }}>{game.title}</h1>
-            <p style={{ color: 'rgba(255,255,255,0.65)' }} className="mb-0">
-              {game.platforms.map(p => p.name).join(' | ') || 'No Platform'} 
+            <p style={{ color: 'rgba(255,255,255,0.75)' }} className="mb-0">
+              {game.platforms?.map(p => p.name).join(' | ') || 'No Platforms'} 
               {game.releaseDate && ` (Released: ${new Date(game.releaseDate).getFullYear()})`}
             </p>
           </div>
 
           <div className="d-flex gap-2 ms-md-auto align-self-start align-self-md-end">
-            <Link to={`/games/edit/${game.id}`} className="btn btn-premium-purple d-flex align-items-center gap-2">
-              <i className="bi bi-pencil-square"></i>
-              <span>Edit Game</span>
-            </Link>
-            <button className="btn btn-sm" style={{ background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(220,38,38,0.5)', color: '#f87171' }} onClick={deleteGame} title="Delete Game">
-              <i className="bi bi-trash3-fill"></i>
-            </button>
+            {!game.isInUserLibrary && (
+              <button 
+                className="btn btn-primary d-flex align-items-center gap-2"
+                onClick={() => setShowAddModal(true)}
+              >
+                <i className="bi bi-plus-circle-fill"></i>
+                <span>Add to My Library</span>
+              </button>
+            )}
+            {hasPermission('Games.Update') && (
+              <Link to={`/games/edit/${game.id}`} className="btn btn-outline-light d-flex align-items-center gap-2">
+                <i className="bi bi-pencil-square"></i>
+                <span>Edit Catalog</span>
+              </Link>
+            )}
+            {hasPermission('Games.Delete') && (
+              <button className="btn btn-outline-danger" onClick={deleteGame} title="Delete from Catalog">
+                <i className="bi bi-trash3-fill"></i>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       <div className="row g-4">
-        {/* Left Column: Details, description, reviews */}
+        {/* Left Column: Details, description, media */}
         <div className="col-12 col-lg-8">
-          {/* Basic Info panel */}
-          <div className="glass-panel p-4 mb-4">
-            <h5 className="display-font pb-2 mb-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>About the Game</h5>
-            {game.originalTitle && <p className="text-muted small"><strong style={{ color: 'var(--text-secondary)' }}>Original Title:</strong> {game.originalTitle}</p>}
-            {game.alternateTitles && <p className="text-muted small"><strong style={{ color: 'var(--text-secondary)' }}>Alternate Titles:</strong> {game.alternateTitles}</p>}
-            <p className="leading-relaxed" style={{ color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>
+          <div className="card custom-card border-0 p-4 mb-4">
+            <h5 className="display-font pb-2 mb-3 border-bottom border-secondary-subtle">About the Game</h5>
+            {game.originalTitle && <p className="text-secondary small"><strong>Original Title:</strong> {game.originalTitle}</p>}
+            {game.alternateTitles && <p className="text-secondary small"><strong>Alternate Titles:</strong> {game.alternateTitles}</p>}
+            <p className="leading-relaxed" style={{ whiteSpace: 'pre-wrap' }}>
               {game.description || 'No description provided.'}
             </p>
             
             {game.notes && (
               <>
-                <h6 className="display-font mt-4 mb-2">General Notes</h6>
-                <div className="p-3 rounded-3 small" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                <h6 className="display-font mt-4 mb-2">Catalog Notes</h6>
+                <div className="p-3 rounded bg-body-tertiary border small">
                   {game.notes}
-                </div>
-              </>
-            )}
-
-            {game.personalNotes && (
-              <>
-                <h6 className="display-font mt-4 mb-2">Personal Comments</h6>
-                <div className="p-3 rounded-3 small" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                  {game.personalNotes}
                 </div>
               </>
             )}
           </div>
 
-          {/* YouTube video panel */}
+          {/* YouTube Video Media */}
           {embedUrl && (
-            <div className="glass-panel p-4 mb-4">
-              <h5 className="display-font pb-2 mb-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>Game Trailer &amp; Media</h5>
-              <div className="ratio ratio-16x9 rounded-3 overflow-hidden" style={{ border: '1px solid var(--border-color)' }}>
+            <div className="card custom-card border-0 p-4 mb-4">
+              <h5 className="display-font pb-2 mb-3 border-bottom border-secondary-subtle">Game Trailer &amp; Media</h5>
+              <div className="ratio ratio-16x9 rounded overflow-hidden border">
                 <iframe 
                   src={embedUrl} 
                   title="Game Video Trailer" 
@@ -183,100 +210,116 @@ const GameDetail = () => {
           )}
         </div>
 
-        {/* Right Column: Ratings, Purchase, Metadata lookups */}
+        {/* Right Column: Ratings & Taxonomies */}
         <div className="col-12 col-lg-4">
-          
-          {/* Game Stats & Ratings */}
-          <div className="glass-panel p-4 mb-4">
-            <h5 className="display-font pb-2 mb-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>Time &amp; Ratings</h5>
-            <div className="d-flex align-items-center gap-3 mb-4">
-              <div className="kpi-icon-wrapper kpi-purple flex-shrink-0">
-                <i className="bi bi-clock-history"></i>
-              </div>
-              <div>
-                <div className="kpi-card-label">Time Played</div>
-                <h4 className="mb-0 kpi-card-value display-font">{game.hoursPlayed} Hours</h4>
-              </div>
-            </div>
-
+          <div className="card custom-card border-0 p-4 mb-4">
+            <h5 className="display-font pb-2 mb-3 border-bottom border-secondary-subtle">Ratings &amp; Scores</h5>
             <div className="row g-2 mb-3 text-center">
-              <div className="col-4">
-                <div className="p-2 rounded-3" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)' }}>
-                  <div className="kpi-card-label" style={{ fontSize: '0.7rem' }}>Personal</div>
-                  <div className="fw-bold display-font" style={{ color: '#ca8a04' }}>
-                    {game.personalRating ? <><i className="bi bi-star-fill me-1"></i>{game.personalRating}</> : '-'}
-                  </div>
-                </div>
-              </div>
-              <div className="col-4">
-                <div className="p-2 rounded-3" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)' }}>
-                  <div className="kpi-card-label" style={{ fontSize: '0.7rem' }}>Community</div>
-                  <div className="fw-bold display-font" style={{ color: '#3b82f6' }}>
+              <div className="col-6">
+                <div className="p-2 rounded bg-body-tertiary border">
+                  <div className="small text-secondary" style={{ fontSize: '0.7rem' }}>Community</div>
+                  <div className="fw-bold fs-5 text-primary">
                     {game.communityRating ? <><i className="bi bi-people-fill me-1"></i>{game.communityRating}</> : '-'}
                   </div>
                 </div>
               </div>
-              <div className="col-4">
-                <div className="p-2 rounded-3" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)' }}>
-                  <div className="kpi-card-label" style={{ fontSize: '0.7rem' }}>Critic Score</div>
-                  <div className="fw-bold display-font" style={{ color: 'var(--accent-green)' }}>
+              <div className="col-6">
+                <div className="p-2 rounded bg-body-tertiary border">
+                  <div className="small text-secondary" style={{ fontSize: '0.7rem' }}>Critic Score</div>
+                  <div className="fw-bold fs-5 text-success">
                     {game.criticRating ? <><i className="bi bi-award-fill me-1"></i>{game.criticRating}</> : '-'}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="spec-row"><span className="spec-label">Metacritic Score:</span><span className="spec-value">{game.metacriticScore ? `${game.metacriticScore}/100` : '-'}</span></div>
-            <div className="spec-row"><span className="spec-label">OpenCritic Score:</span><span className="spec-value">{game.openCriticScore ? `${game.openCriticScore}/100` : '-'}</span></div>
-            <div className="spec-row"><span className="spec-label">Steam Deck Status:</span><span className="spec-value">{game.steamDeckCompatibility || 'Unknown'}</span></div>
-            <div className="spec-row"><span className="spec-label">Achievements:</span><span className="spec-value">{game.achievementCount || 0} unlocked</span></div>
-            <div className="spec-row" style={{ borderBottom: 'none' }}><span className="spec-label">DLCs &amp; Expansions:</span><span className="spec-value">{game.dlcCount + game.expansionCount} owned</span></div>
-          </div>
-
-          {/* Ownership & Purchase Info */}
-          <div className="glass-panel p-4 mb-4">
-            <h5 className="display-font pb-2 mb-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>Purchase Details</h5>
-            <div className="spec-row">
-              <span className="spec-label">Format Copy:</span>
-              <span className="spec-value" style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>
-                {game.physicalCopy ? 'Physical' : ''}
-                {game.physicalCopy && game.digitalCopy ? ' & ' : ''}
-                {game.digitalCopy ? 'Digital' : ''}
-                {!game.physicalCopy && !game.digitalCopy ? '-' : ''}
-              </span>
+            <div className="d-flex justify-content-between py-2 border-bottom border-secondary-subtle small">
+              <span className="text-secondary">Metacritic:</span>
+              <span className="fw-bold">{game.metacriticScore ? `${game.metacriticScore}/100` : '-'}</span>
             </div>
-            <div className="spec-row"><span className="spec-label">Purchase Date:</span><span className="spec-value" style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>{game.purchaseDate ? new Date(game.purchaseDate).toLocaleDateString() : '-'}</span></div>
-            <div className="spec-row"><span className="spec-label">Paid Price:</span><span className="spec-value" style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>{game.purchasePrice ? `${game.purchasePrice} ${game.currency || 'USD'}` : '-'}</span></div>
-            <div className="spec-row"><span className="spec-label">Storefront:</span><span className="spec-value" style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>{game.storePurchasedFrom || '-'}</span></div>
-            <div className="spec-row" style={{ borderBottom: 'none' }}><span className="spec-label">Purchase Region:</span><span className="spec-value" style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>{game.purchaseRegion || '-'}</span></div>
+            <div className="d-flex justify-content-between py-2 border-bottom border-secondary-subtle small">
+              <span className="text-secondary">OpenCritic:</span>
+              <span className="fw-bold">{game.openCriticScore ? `${game.openCriticScore}/100` : '-'}</span>
+            </div>
+            <div className="d-flex justify-content-between py-2 border-bottom border-secondary-subtle small">
+              <span className="text-secondary">Steam Deck:</span>
+              <span className="fw-bold">{game.steamDeckCompatibility || 'Unknown'}</span>
+            </div>
+            <div className="d-flex justify-content-between py-2 small">
+              <span className="text-secondary">Achievements:</span>
+              <span className="fw-bold">{game.achievementCount || 0}</span>
+            </div>
           </div>
 
-          {/* Game Taxonomies metadata */}
-          <div className="glass-panel p-4 mb-4">
-            <h5 className="display-font pb-2 mb-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>Relations &amp; Metadata</h5>
-            
+          <div className="card custom-card border-0 p-4 mb-4">
+            <h5 className="display-font pb-2 mb-3 border-bottom border-secondary-subtle">Metadata &amp; Taxonomy</h5>
             {[
               { label: 'Developers', items: game.developers },
               { label: 'Publishers', items: game.publishers },
-              { label: 'Storefront Services', items: game.digitalServices },
+              { label: 'Supported Platforms', items: game.platforms },
+              { label: 'Digital Services', items: game.digitalServices },
               { label: 'Genres', items: game.genres },
               { label: 'Themes', items: game.themes },
-              { label: 'User Tags', items: game.tags },
+              { label: 'Tags', items: game.tags },
             ].map(({ label, items }) => (
               <div key={label} className="mb-3">
-                <div className="kpi-card-label mb-1" style={{ fontSize: '0.75rem' }}>{label}:</div>
+                <div className="small text-secondary fw-bold mb-1" style={{ fontSize: '0.75rem' }}>{label}:</div>
                 <div className="d-flex gap-1 flex-wrap">
                   {items?.length > 0 
-                    ? items.map(item => <span key={item.id} className="meta-tag">{item.name}</span>)
-                    : <span className="text-muted small">-</span>
+                    ? items.map(item => <span key={item.id} className="badge bg-secondary-subtle text-secondary border">{item.name}</span>)
+                    : <span className="text-secondary small fst-italic">None</span>
                   }
                 </div>
               </div>
             ))}
           </div>
-
         </div>
       </div>
+
+      {/* Add To Library Modal */}
+      {showAddModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1050 }} tabIndex="-1">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content custom-card border-0 shadow">
+              <div className="modal-header border-bottom border-secondary-subtle">
+                <h5 className="modal-title fw-bold">
+                  <i className="bi bi-plus-circle me-2 text-primary"></i>
+                  Add '{game.title}' to My Library
+                </h5>
+                <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
+              </div>
+              <form onSubmit={handleAddToLibrary}>
+                <div className="modal-body p-4">
+                  <p className="text-secondary small mb-3">
+                    Select which platforms you own this game on:
+                  </p>
+                  <div className="d-flex flex-wrap gap-2 mb-3">
+                    {game.platforms?.map((plat) => (
+                      <button
+                        key={plat.id}
+                        type="button"
+                        className={`btn btn-sm ${userSelectedPlatformIds.includes(plat.id) ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => handleToggleUserPlatform(plat.id)}
+                      >
+                        {userSelectedPlatformIds.includes(plat.id) && <i className="bi bi-check me-1"></i>}
+                        {plat.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="modal-footer border-top border-secondary-subtle">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)} disabled={addingToLibrary}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={addingToLibrary}>
+                    {addingToLibrary ? 'Adding...' : 'Confirm Add to Library'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

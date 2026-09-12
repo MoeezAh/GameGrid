@@ -45,6 +45,7 @@ public static class ConfigureServices
 
         // Services
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         // JWT Authentication

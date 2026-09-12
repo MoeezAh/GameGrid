@@ -32,6 +32,10 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
+// Permission Authorization
+builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, GameCollection.API.Authorization.PermissionPolicyProvider>();
+builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, GameCollection.API.Authorization.PermissionAuthorizationHandler>();
+
 builder.Services.AddControllers();
 
 // Configure CORS for React local development

@@ -20,14 +20,18 @@ public class AuthResponse
     public string Token { get; set; } = null!;
     public string Username { get; set; } = null!;
     public string Email { get; set; } = null!;
+    public bool IsSuperAdmin { get; set; }
     public List<string> Roles { get; set; } = new();
+    public List<string> Permissions { get; set; } = new();
 }
 
 public class UserProfileDto
 {
     public string Username { get; set; } = null!;
     public string Email { get; set; } = null!;
+    public bool IsSuperAdmin { get; set; }
     public List<string> Roles { get; set; } = new();
+    public List<string> Permissions { get; set; } = new();
 }
 
 public class UpdateProfileDto

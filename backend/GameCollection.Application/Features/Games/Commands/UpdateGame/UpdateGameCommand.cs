@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GameCollection.Domain.Entities;
-using GameCollection.Domain.Enums;
 using GameCollection.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -19,31 +18,7 @@ public record UpdateGameCommand : IRequest<bool>
     public string? OriginalTitle { get; init; }
     public string? Description { get; init; }
     public string? Notes { get; init; }
-    public string? PersonalNotes { get; init; }
 
-    public bool OwnGame { get; init; }
-    public bool Wishlist { get; init; }
-    public bool Backlog { get; init; }
-    public bool PhysicalCopy { get; init; }
-    public bool DigitalCopy { get; init; }
-    public bool CollectorsEdition { get; init; }
-    public bool SpecialEdition { get; init; }
-
-    public DateTimeOffset? PurchaseDate { get; init; }
-    public decimal? PurchasePrice { get; init; }
-    public string? Currency { get; init; }
-    public string? StorePurchasedFrom { get; init; }
-    public string? PurchaseRegion { get; init; }
-    public string? ReceiptReference { get; init; }
-    public bool Gifted { get; init; }
-
-    public DateTimeOffset? StartedPlayingDate { get; init; }
-    public DateTimeOffset? CompletedDate { get; init; }
-    public DateTimeOffset? LastPlayedDate { get; init; }
-    public double HoursPlayed { get; init; }
-    public CompletionStatus CompletionStatus { get; init; }
-
-    public double? PersonalRating { get; init; }
     public double? CommunityRating { get; init; }
     public double? CriticRating { get; init; }
 
@@ -77,8 +52,6 @@ public record UpdateGameCommand : IRequest<bool>
     public int DlcCount { get; init; }
     public int ExpansionCount { get; init; }
 
-    public string UserId { get; set; } = null!;
-
     public int? FranchiseId { get; init; }
     public int? SeriesId { get; init; }
 
@@ -110,44 +83,22 @@ public class UpdateGameCommandHandler : IRequestHandler<UpdateGameCommand, bool>
             .Include(g => g.Themes)
             .Include(g => g.Platforms)
             .Include(g => g.DigitalServices)
-            .FirstOrDefaultAsync(g => g.Id == request.Id && g.UserId == request.UserId, cancellationToken);
+            .FirstOrDefaultAsync(g => g.Id == request.Id, cancellationToken);
 
         if (game == null) return false;
 
         // Update fields
-        game.Title = request.Title;
+        game.Title = request.Title.Trim();
         game.AlternateTitles = request.AlternateTitles;
         game.OriginalTitle = request.OriginalTitle;
         game.Description = request.Description;
         game.Notes = request.Notes;
-        game.PersonalNotes = request.PersonalNotes;
-        game.OwnGame = request.OwnGame;
-        game.Wishlist = request.Wishlist;
-        game.Backlog = request.Backlog;
-        game.PhysicalCopy = request.PhysicalCopy;
-        game.DigitalCopy = request.DigitalCopy;
-        game.CollectorsEdition = request.CollectorsEdition;
-        game.SpecialEdition = request.SpecialEdition;
-        game.PurchaseDate = request.PurchaseDate;
-        game.PurchasePrice = request.PurchasePrice;
-        game.Currency = request.Currency;
-        game.StorePurchasedFrom = request.StorePurchasedFrom;
-        game.PurchaseRegion = request.PurchaseRegion;
-        game.ReceiptReference = request.ReceiptReference;
-        game.Gifted = request.Gifted;
-        game.StartedPlayingDate = request.StartedPlayingDate;
-        game.CompletedDate = request.CompletedDate;
-        game.LastPlayedDate = request.LastPlayedDate;
-        game.HoursPlayed = request.HoursPlayed;
-        game.CompletionStatus = request.CompletionStatus;
-        game.PersonalRating = request.PersonalRating;
         game.CommunityRating = request.CommunityRating;
         game.CriticRating = request.CriticRating;
         game.ReleaseDate = request.ReleaseDate;
         game.OriginalReleaseDate = request.OriginalReleaseDate;
         game.EarlyAccessDate = request.EarlyAccessDate;
         
-        // Preserve media fields if request didn't supply new values (optional, but standard for form posts where media isn't re-uploaded)
         if (!string.IsNullOrWhiteSpace(request.CoverImage)) game.CoverImage = request.CoverImage;
         if (!string.IsNullOrWhiteSpace(request.BoxArt)) game.BoxArt = request.BoxArt;
         if (!string.IsNullOrWhiteSpace(request.Banner)) game.Banner = request.Banner;

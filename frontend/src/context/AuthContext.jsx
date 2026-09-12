@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore user from local storage
+    // Restore user session from local storage
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
     
@@ -33,7 +33,9 @@ export const AuthProvider = ({ children }) => {
       const userData = {
         username: authData.username,
         email: authData.email,
-        roles: authData.roles
+        roles: authData.roles || [],
+        permissions: authData.permissions || [],
+        isSuperAdmin: !!authData.isSuperAdmin
       };
       
       localStorage.setItem('user', JSON.stringify(userData));
@@ -42,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        message: error.message || 'Login failed. Please check credentials.'
+        message: error.response?.data?.errors?.[0] || error.message || 'Login failed. Please check credentials.'
       };
     }
   };
@@ -57,7 +59,9 @@ export const AuthProvider = ({ children }) => {
       const userData = {
         username: authData.username,
         email: authData.email,
-        roles: authData.roles
+        roles: authData.roles || [],
+        permissions: authData.permissions || [],
+        isSuperAdmin: !!authData.isSuperAdmin
       };
       
       localStorage.setItem('user', JSON.stringify(userData));
@@ -66,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        message: error.message || 'Registration failed.'
+        message: error.response?.data?.errors?.[0] || error.message || 'Registration failed.'
       };
     }
   };
@@ -77,8 +81,50 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const refreshProfile = async () => {
+    try {
+      const response = await api.get('/auth/profile');
+      const profile = response.data;
+      const updatedUser = {
+        ...user,
+        username: profile.username,
+        email: profile.email,
+        roles: profile.roles || [],
+        permissions: profile.permissions || [],
+        isSuperAdmin: !!profile.isSuperAdmin
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    } catch (err) {
+      console.error('Failed to refresh user profile', err);
+    }
+  };
+
+  // Permission evaluation helpers
+  const isSuperAdmin = () => {
+    return !!user?.isSuperAdmin;
+  };
+
+  const hasPermission = (permissionName) => {
+    if (!user) return false;
+    if (user.isSuperAdmin) return true;
+    return user.permissions?.includes(permissionName) || false;
+  };
+
+  const hasAnyPermission = (permissionNames = []) => {
+    if (!user) return false;
+    if (user.isSuperAdmin) return true;
+    return permissionNames.some(p => user.permissions?.includes(p));
+  };
+
+  const hasRole = (roleName) => {
+    if (!user || !user.roles) return false;
+    return user.roles.includes(roleName);
+  };
+
+  // Backward compatibility alias
   const isAdmin = () => {
-    return user && user.roles && user.roles.includes('Administrator');
+    return isSuperAdmin() || hasRole('Administrator') || hasRole('Admin');
   };
 
   const value = {
@@ -87,6 +133,11 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    refreshProfile,
+    isSuperAdmin,
+    hasPermission,
+    hasAnyPermission,
+    hasRole,
     isAdmin
   };
 

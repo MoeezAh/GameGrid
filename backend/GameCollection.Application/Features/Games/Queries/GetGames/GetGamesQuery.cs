@@ -8,7 +8,6 @@ using AutoMapper.QueryableExtensions;
 using GameCollection.Application.Common.Models;
 using GameCollection.Application.DTOs.Game;
 using GameCollection.Domain.Entities;
-using GameCollection.Domain.Enums;
 using GameCollection.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -23,15 +22,11 @@ public record GetGamesQuery : IRequest<PaginatedList<GameListDto>>
     public List<int>? GenreIds { get; init; }
     public List<int>? DeveloperIds { get; init; }
     public List<int>? PublisherIds { get; init; }
-    public List<CompletionStatus>? CompletionStatuses { get; init; }
-    public bool? Wishlist { get; init; }
-    public bool? Backlog { get; init; }
-    public bool? OwnGame { get; init; }
     public string? SortBy { get; init; }
     public string? SortOrder { get; init; } // "asc" or "desc"
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = 12;
-    public string UserId { get; init; } = null!;
+    public string? UserId { get; init; }
 }
 
 public class GetGamesQueryHandler : IRequestHandler<GetGamesQuery, PaginatedList<GameListDto>>
@@ -53,7 +48,7 @@ public class GetGamesQueryHandler : IRequestHandler<GetGamesQuery, PaginatedList
             .Include(g => g.Genres)
             .Include(g => g.DigitalServices)
             .Include(g => g.Tags)
-            .Where(g => g.UserId == request.UserId);
+            .AsNoTracking();
 
         // Apply filters
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -89,39 +84,18 @@ public class GetGamesQueryHandler : IRequestHandler<GetGamesQuery, PaginatedList
             query = query.Where(g => g.Publishers.Any(p => request.PublisherIds.Contains(p.Id)));
         }
 
-        if (request.CompletionStatuses != null && request.CompletionStatuses.Any())
-        {
-            query = query.Where(g => request.CompletionStatuses.Contains(g.CompletionStatus));
-        }
-
-        if (request.Wishlist.HasValue)
-        {
-            query = query.Where(g => g.Wishlist == request.Wishlist.Value);
-        }
-
-        if (request.Backlog.HasValue)
-        {
-            query = query.Where(g => g.Backlog == request.Backlog.Value);
-        }
-
-        if (request.OwnGame.HasValue)
-        {
-            query = query.Where(g => g.OwnGame == request.OwnGame.Value);
-        }
-
         // Apply sorting
         bool isDescending = string.Equals(request.SortOrder, "desc", StringComparison.OrdinalIgnoreCase);
         
         query = request.SortBy?.ToLower() switch
         {
             "releasedate" => isDescending ? query.OrderByDescending(g => g.ReleaseDate) : query.OrderBy(g => g.ReleaseDate),
-            "purchasedate" => isDescending ? query.OrderByDescending(g => g.PurchaseDate) : query.OrderBy(g => g.PurchaseDate),
-            "rating" => isDescending ? query.OrderByDescending(g => g.PersonalRating) : query.OrderBy(g => g.PersonalRating),
-            "hoursplayed" => isDescending ? query.OrderByDescending(g => g.HoursPlayed) : query.OrderBy(g => g.HoursPlayed),
+            "criticrating" => isDescending ? query.OrderByDescending(g => g.CriticRating) : query.OrderBy(g => g.CriticRating),
+            "metacritic" => isDescending ? query.OrderByDescending(g => g.MetacriticScore) : query.OrderBy(g => g.MetacriticScore),
             _ => isDescending ? query.OrderByDescending(g => g.Title) : query.OrderBy(g => g.Title)
         };
 
-        // Paginate and Project
+        // Paginate
         int totalCount = await query.CountAsync(cancellationToken);
         
         var items = await query
@@ -129,6 +103,25 @@ public class GetGamesQueryHandler : IRequestHandler<GetGamesQuery, PaginatedList
             .Take(request.PageSize)
             .ProjectTo<GameListDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
+
+        // Populate user library ownership if UserId supplied
+        if (!string.IsNullOrEmpty(request.UserId) && items.Any())
+        {
+            var gameIds = items.Select(i => i.Id).ToList();
+            var userLibraryMap = await _unitOfWork.Repository<UserLibraryEntry>().GetQueryable()
+                .Where(l => l.UserId == request.UserId && gameIds.Contains(l.GameId))
+                .Select(l => new { l.Id, l.GameId })
+                .ToDictionaryAsync(l => l.GameId, l => l.Id, cancellationToken);
+
+            foreach (var item in items)
+            {
+                if (userLibraryMap.TryGetValue(item.Id, out var libraryEntryId))
+                {
+                    item.IsInUserLibrary = true;
+                    item.UserLibraryEntryId = libraryEntryId;
+                }
+            }
+        }
 
         return new PaginatedList<GameListDto>(items, totalCount, request.PageNumber, request.PageSize);
     }

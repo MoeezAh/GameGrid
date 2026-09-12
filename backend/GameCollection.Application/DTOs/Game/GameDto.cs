@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using GameCollection.Domain.Enums;
 
 namespace GameCollection.Application.DTOs.Game;
 
@@ -12,31 +11,7 @@ public class GameDto
     public string? OriginalTitle { get; set; }
     public string? Description { get; set; }
     public string? Notes { get; set; }
-    public string? PersonalNotes { get; set; }
 
-    public bool OwnGame { get; set; }
-    public bool Wishlist { get; set; }
-    public bool Backlog { get; set; }
-    public bool PhysicalCopy { get; set; }
-    public bool DigitalCopy { get; set; }
-    public bool CollectorsEdition { get; set; }
-    public bool SpecialEdition { get; set; }
-
-    public DateTimeOffset? PurchaseDate { get; set; }
-    public decimal? PurchasePrice { get; set; }
-    public string? Currency { get; set; }
-    public string? StorePurchasedFrom { get; set; }
-    public string? PurchaseRegion { get; set; }
-    public string? ReceiptReference { get; set; }
-    public bool Gifted { get; set; }
-
-    public DateTimeOffset? StartedPlayingDate { get; set; }
-    public DateTimeOffset? CompletedDate { get; set; }
-    public DateTimeOffset? LastPlayedDate { get; set; }
-    public double HoursPlayed { get; set; }
-    public CompletionStatus CompletionStatus { get; set; }
-
-    public double? PersonalRating { get; set; }
     public double? CommunityRating { get; set; }
     public double? CriticRating { get; set; }
 
@@ -70,8 +45,6 @@ public class GameDto
     public int DlcCount { get; set; }
     public int ExpansionCount { get; set; }
 
-    public string UserId { get; set; } = null!;
-
     public int? FranchiseId { get; set; }
     public string? FranchiseName { get; set; }
 
@@ -85,6 +58,10 @@ public class GameDto
     public List<MetadataItemDto> Themes { get; set; } = new();
     public List<MetadataItemDto> Platforms { get; set; } = new();
     public List<MetadataItemDto> DigitalServices { get; set; } = new();
+
+    // User context properties
+    public bool IsInUserLibrary { get; set; }
+    public int? UserLibraryEntryId { get; set; }
 }
 
 public class MetadataItemDto
