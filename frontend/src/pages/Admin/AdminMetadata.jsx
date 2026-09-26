@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 
 const metadataConfig = {
@@ -10,7 +11,8 @@ const metadataConfig = {
       { key: 'name', label: 'Name', sortable: true },
       { key: 'manufacturer', label: 'Manufacturer', sortable: true },
       { key: 'releaseDate', label: 'Release Date', sortable: true, format: (val) => val ? new Date(val).toLocaleDateString() : '-' },
-      { key: 'generation', label: 'Gen', sortable: true }
+      { key: 'generation', label: 'Gen', sortable: true },
+      { key: 'gamesCount', label: 'Games', format: (val, item) => <Link to={`/catalog?platformId=${item.id}`} className="badge bg-primary-subtle text-primary text-decoration-none">{val} games</Link> }
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -26,7 +28,7 @@ const metadataConfig = {
     columns: [
       { key: 'name', label: 'Name', sortable: true },
       { key: 'website', label: 'Website', format: (val) => val ? <a href={val} target="_blank" rel="noreferrer" className="text-teal-400">{val}</a> : '-' },
-      { key: 'notes', label: 'Notes' }
+      { key: 'gamesCount', label: 'Games', format: (val, item) => <Link to={`/catalog?serviceId=${item.id}`} className="badge bg-primary-subtle text-primary text-decoration-none">{val} games</Link> }
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -40,7 +42,8 @@ const metadataConfig = {
     columns: [
       { key: 'name', label: 'Name', sortable: true },
       { key: 'country', label: 'Country', sortable: true },
-      { key: 'website', label: 'Website', format: (val) => val ? <a href={val} target="_blank" rel="noreferrer" className="text-teal-400">{val}</a> : '-' }
+      { key: 'website', label: 'Website', format: (val) => val ? <a href={val} target="_blank" rel="noreferrer" className="text-teal-400">{val}</a> : '-' },
+      { key: 'gamesCount', label: 'Games', format: (val, item) => <Link to={`/catalog?developerId=${item.id}`} className="badge bg-primary-subtle text-primary text-decoration-none">{val} games</Link> }
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -56,7 +59,8 @@ const metadataConfig = {
     columns: [
       { key: 'name', label: 'Name', sortable: true },
       { key: 'country', label: 'Country', sortable: true },
-      { key: 'website', label: 'Website', format: (val) => val ? <a href={val} target="_blank" rel="noreferrer" className="text-teal-400">{val}</a> : '-' }
+      { key: 'website', label: 'Website', format: (val) => val ? <a href={val} target="_blank" rel="noreferrer" className="text-teal-400">{val}</a> : '-' },
+      { key: 'gamesCount', label: 'Games', format: (val, item) => <Link to={`/catalog?publisherId=${item.id}`} className="badge bg-primary-subtle text-primary text-decoration-none">{val} games</Link> }
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -71,7 +75,7 @@ const metadataConfig = {
     endpoint: 'genres',
     columns: [
       { key: 'name', label: 'Name', sortable: true },
-      { key: 'description', label: 'Description' }
+      { key: 'gamesCount', label: 'Games', format: (val, item) => <Link to={`/catalog?genreId=${item.id}`} className="badge bg-primary-subtle text-primary text-decoration-none">{val} games</Link> }
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -82,7 +86,8 @@ const metadataConfig = {
     title: 'Tags',
     endpoint: 'tags',
     columns: [
-      { key: 'name', label: 'Name', sortable: true }
+      { key: 'name', label: 'Name', sortable: true },
+      { key: 'gamesCount', label: 'Games', format: (val, item) => <span className="badge bg-secondary">{val} games</span> }
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true }
@@ -93,7 +98,7 @@ const metadataConfig = {
     endpoint: 'themes',
     columns: [
       { key: 'name', label: 'Name', sortable: true },
-      { key: 'description', label: 'Description' }
+      { key: 'gamesCount', label: 'Games', format: (val, item) => <span className="badge bg-secondary">{val} games</span> }
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -105,7 +110,7 @@ const metadataConfig = {
     endpoint: 'franchises',
     columns: [
       { key: 'name', label: 'Name', sortable: true },
-      { key: 'description', label: 'Description' }
+      { key: 'gamesCount', label: 'Games', format: (val, item) => <span className="badge bg-secondary">{val} games</span> }
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -117,7 +122,7 @@ const metadataConfig = {
     endpoint: 'series',
     columns: [
       { key: 'name', label: 'Name', sortable: true },
-      { key: 'description', label: 'Description' }
+      { key: 'gamesCount', label: 'Games', format: (val, item) => <span className="badge bg-secondary">{val} games</span> }
     ],
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -179,6 +184,14 @@ const AdminMetadata = () => {
 
   useEffect(() => {
     fetchItems();
+    
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setShowModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
@@ -334,7 +347,7 @@ const AdminMetadata = () => {
                   <tr key={item.id}>
                     {config.columns.map((col, idx) => (
                       <td key={idx} className="p-3" style={{ color: 'var(--text-secondary)' }}>
-                        {col.format ? col.format(item[col.key]) : item[col.key]}
+                        {col.format ? col.format(item[col.key], item) : item[col.key]}
                       </td>
                     ))}
                     <td className="p-3 text-end">
@@ -371,7 +384,7 @@ const AdminMetadata = () => {
       )}
 
       {/* Modals Form Dialog */}
-      {showModal && (
+      {showModal && createPortal(
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }} tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content glass-panel" style={{ border: '1px solid var(--border-color)' }}>
@@ -427,7 +440,8 @@ const AdminMetadata = () => {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

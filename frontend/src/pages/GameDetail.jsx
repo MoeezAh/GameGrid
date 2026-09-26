@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api, { API_HOST } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -277,7 +278,7 @@ const GameDetail = () => {
       </div>
 
       {/* Add To Library Modal */}
-      {showAddModal && (
+      {showAddModal && createPortal(
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1050 }} tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content custom-card border-0 shadow">
@@ -318,7 +319,8 @@ const GameDetail = () => {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

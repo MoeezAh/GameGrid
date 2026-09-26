@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using GameCollection.Application.DTOs.Dashboard;
 using GameCollection.Application.DTOs.Game;
 using GameCollection.Domain.Entities;
@@ -31,20 +30,49 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
     public async Task<DashboardDto> Handle(GetDashboardStatsQuery request, CancellationToken cancellationToken)
     {
         var repository = _unitOfWork.Repository<UserLibraryEntry>();
-        var query = repository.GetQueryable()
+        
+        // Fetch all library entries for this user with their game and taxonomy details
+        var userEntries = await repository.GetQueryable()
             .Include(l => l.Game)
                 .ThenInclude(g => g.Platforms)
             .Include(l => l.Game)
                 .ThenInclude(g => g.Genres)
+            .Include(l => l.Game)
+                .ThenInclude(g => g.DigitalServices)
+            .Include(l => l.Game)
+                .ThenInclude(g => g.Tags)
             .Include(l => l.Platforms)
             .Include(l => l.DigitalServices)
-            .Where(l => l.UserId == request.UserId);
+            .Where(l => l.UserId == request.UserId)
+            .ToListAsync(cancellationToken);
 
-        var totalGamesOwned = await query.CountAsync(l => l.OwnGame, cancellationToken);
-        var totalCompletedGames = await query.CountAsync(l => l.CompletionStatus == CompletionStatus.Completed || l.CompletionStatus == CompletionStatus.Completed100, cancellationToken);
-        var totalUnplayedGames = await query.CountAsync(l => l.CompletionStatus == CompletionStatus.NotStarted, cancellationToken);
-        var wishlistCount = await query.CountAsync(l => l.Wishlist, cancellationToken);
-        var backlogCount = await query.CountAsync(l => l.Backlog, cancellationToken);
+        if (!userEntries.Any())
+        {
+            return new DashboardDto
+            {
+                TotalGamesOwned = 0,
+                TotalCompletedGames = 0,
+                TotalUnplayedGames = 0,
+                TotalPlatforms = 0,
+                TotalServices = 0,
+                WishlistCount = 0,
+                BacklogCount = 0,
+                CompletionPercentage = 0,
+                RecentlyAddedGames = new List<GameListDto>(),
+                RecentlyCompletedGames = new List<GameListDto>(),
+                MostPlayedGames = new List<GameListDto>(),
+                GamesByPlatform = new List<ChartDataItem>(),
+                GamesByGenre = new List<ChartDataItem>(),
+                GamesByReleaseYear = new List<ChartDataItem>(),
+                GamesByStatus = new List<ChartDataItem>()
+            };
+        }
+
+        var totalGamesOwned = userEntries.Count(l => l.OwnGame);
+        var totalCompletedGames = userEntries.Count(l => l.CompletionStatus == CompletionStatus.Completed || l.CompletionStatus == CompletionStatus.Completed100);
+        var totalUnplayedGames = userEntries.Count(l => l.CompletionStatus == CompletionStatus.NotStarted);
+        var wishlistCount = userEntries.Count(l => l.Wishlist);
+        var backlogCount = userEntries.Count(l => l.Backlog);
 
         // Completion percentage
         double completionPercentage = 0;
@@ -53,37 +81,42 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
             completionPercentage = Math.Round((double)totalCompletedGames / totalGamesOwned * 100, 2);
         }
 
-        // Count unique platforms across user library
-        var totalPlatforms = await query.SelectMany(l => l.Platforms.Any() ? l.Platforms : l.Game.Platforms)
-            .Select(p => p.Id).Distinct().CountAsync(cancellationToken);
+        // Count unique platforms across user library (prefer user selected platforms, fallback to game platforms)
+        var totalPlatforms = userEntries
+            .SelectMany(l => l.Platforms.Any() ? l.Platforms : l.Game.Platforms)
+            .Select(p => p.Id)
+            .Distinct()
+            .Count();
 
-        var totalServices = await query.SelectMany(l => l.DigitalServices.Any() ? l.DigitalServices : l.Game.DigitalServices)
-            .Select(s => s.Id).Distinct().CountAsync(cancellationToken);
+        var totalServices = userEntries
+            .SelectMany(l => l.DigitalServices.Any() ? l.DigitalServices : l.Game.DigitalServices)
+            .Select(s => s.Id)
+            .Distinct()
+            .Count();
 
         // Recent listings mapped to GameListDto
-        var recentlyAddedEntries = await query
+        var recentlyAdded = userEntries
             .OrderByDescending(l => l.CreatedDate)
             .Take(5)
-            .ToListAsync(cancellationToken);
+            .Select(MapToGameListDto)
+            .ToList();
 
-        var recentlyCompletedEntries = await query
+        var recentlyCompleted = userEntries
             .Where(l => l.CompletionStatus == CompletionStatus.Completed || l.CompletionStatus == CompletionStatus.Completed100)
             .OrderByDescending(l => l.CompletedDate ?? l.UpdatedDate)
             .Take(5)
-            .ToListAsync(cancellationToken);
+            .Select(MapToGameListDto)
+            .ToList();
 
-        var mostPlayedEntries = await query
+        var mostPlayed = userEntries
             .Where(l => l.HoursPlayed > 0)
             .OrderByDescending(l => l.HoursPlayed)
             .Take(5)
-            .ToListAsync(cancellationToken);
-
-        var recentlyAdded = recentlyAddedEntries.Select(MapToGameListDto).ToList();
-        var recentlyCompleted = recentlyCompletedEntries.Select(MapToGameListDto).ToList();
-        var mostPlayed = mostPlayedEntries.Select(MapToGameListDto).ToList();
+            .Select(MapToGameListDto)
+            .ToList();
 
         // Chart Data - Games by Platform
-        var gamesByPlatform = await query
+        var gamesByPlatform = userEntries
             .SelectMany(l => l.Platforms.Any() ? l.Platforms : l.Game.Platforms)
             .GroupBy(p => p.Name)
             .Select(grp => new ChartDataItem
@@ -91,10 +124,11 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
                 Name = grp.Key,
                 Value = grp.Count()
             })
-            .ToListAsync(cancellationToken);
+            .OrderByDescending(x => x.Value)
+            .ToList();
 
         // Chart Data - Games by Genre
-        var gamesByGenre = await query
+        var gamesByGenre = userEntries
             .SelectMany(l => l.Game.Genres)
             .GroupBy(g => g.Name)
             .Select(grp => new ChartDataItem
@@ -102,10 +136,11 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
                 Name = grp.Key,
                 Value = grp.Count()
             })
-            .ToListAsync(cancellationToken);
+            .OrderByDescending(x => x.Value)
+            .ToList();
 
         // Chart Data - Games by Release Year
-        var gamesByReleaseYear = await query
+        var gamesByReleaseYear = userEntries
             .Where(l => l.Game.ReleaseDate != null)
             .GroupBy(l => l.Game.ReleaseDate!.Value.Year)
             .Select(grp => new ChartDataItem
@@ -114,27 +149,27 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
                 Value = grp.Count()
             })
             .OrderBy(item => item.Name)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         // Chart Data - Games by Status
-        var gamesByStatus = await query
+        var gamesByStatus = userEntries
             .GroupBy(l => l.CompletionStatus)
             .Select(grp => new ChartDataItem
             {
-                Name = grp.Key.ToString(),
+                Name = grp.Key switch
+                {
+                    CompletionStatus.NotStarted => "Not Started",
+                    CompletionStatus.Playing => "Playing",
+                    CompletionStatus.OnHold => "On Hold",
+                    CompletionStatus.Completed => "Completed",
+                    CompletionStatus.Dropped => "Dropped",
+                    CompletionStatus.Completed100 => "100% Completed",
+                    CompletionStatus.Replaying => "Replaying",
+                    _ => grp.Key.ToString()
+                },
                 Value = grp.Count()
             })
-            .ToListAsync(cancellationToken);
-
-        foreach (var statusItem in gamesByStatus)
-        {
-            statusItem.Name = statusItem.Name switch
-            {
-                "NotStarted" => "Not Started",
-                "Completed100" => "100% Completed",
-                _ => statusItem.Name
-            };
-        }
+            .ToList();
 
         return new DashboardDto
         {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../services/api';
 
 const MyGameRequests = () => {
@@ -40,6 +41,14 @@ const MyGameRequests = () => {
 
   useEffect(() => {
     fetchMyRequests();
+
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setShowModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
   const openRequestModal = () => {
@@ -253,7 +262,7 @@ const MyGameRequests = () => {
       </div>
 
       {/* Submit Request Modal */}
-      {showModal && (
+      {showModal && createPortal(
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1050 }} tabIndex="-1">
           <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content custom-card border-0 shadow">
@@ -388,7 +397,8 @@ const MyGameRequests = () => {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

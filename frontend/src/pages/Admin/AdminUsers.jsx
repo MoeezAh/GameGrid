@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../services/api';
 
 const AdminUsers = () => {
@@ -33,6 +34,14 @@ const AdminUsers = () => {
 
   useEffect(() => {
     fetchUsersAndRoles();
+
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setSelectedUser(null);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
   const openManageRolesModal = (user) => {
@@ -186,7 +195,7 @@ const AdminUsers = () => {
       </div>
 
       {/* Manage Roles Modal */}
-      {selectedUser && (
+      {selectedUser && createPortal(
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1050 }} tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content custom-card border-0 shadow">
@@ -261,7 +270,8 @@ const AdminUsers = () => {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

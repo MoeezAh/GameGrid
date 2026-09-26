@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api, { API_HOST } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const Catalog = () => {
   const { hasPermission } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +70,13 @@ const Catalog = () => {
       selectedPlatforms.forEach(id => params.append('platformIds', id.toString()));
       selectedGenres.forEach(id => params.append('genreIds', id.toString()));
 
+      const urlParams = new URLSearchParams(location.search);
+      if (urlParams.has('developerId')) params.append('developerIds', urlParams.get('developerId'));
+      if (urlParams.has('publisherId')) params.append('publisherIds', urlParams.get('publisherId'));
+      if (urlParams.has('platformId')) params.append('platformIds', urlParams.get('platformId'));
+      if (urlParams.has('serviceId')) params.append('serviceIds', urlParams.get('serviceId'));
+      if (urlParams.has('genreId')) params.append('genreIds', urlParams.get('genreId'));
+
       const response = await api.get(`/games?${params.toString()}`);
       const data = response.data;
       setGames(data.items || []);
@@ -82,7 +91,15 @@ const Catalog = () => {
 
   useEffect(() => {
     fetchCatalog();
-  }, [page, sortBy, sortOrder, selectedPlatforms, selectedGenres]);
+    
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setShowAddModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [page, sortBy, sortOrder, selectedPlatforms, selectedGenres, location.search]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -236,7 +253,7 @@ const Catalog = () => {
               <button type="submit" className="btn btn-primary px-4">
                 Search
               </button>
-              {(search || selectedPlatforms.length > 0 || selectedGenres.length > 0) && (
+              {(search || selectedPlatforms.length > 0 || selectedGenres.length > 0 || location.search) && (
                 <button
                   type="button"
                   className="btn btn-outline-secondary"
@@ -245,6 +262,7 @@ const Catalog = () => {
                     setSelectedPlatforms([]);
                     setSelectedGenres([]);
                     setPage(1);
+                    navigate('/catalog');
                   }}
                 >
                   Reset
@@ -425,7 +443,7 @@ const Catalog = () => {
       )}
 
       {/* Add To Library Modal (Allows selecting multiple owned platforms) */}
-      {showAddModal && targetGame && (
+      {showAddModal && targetGame && createPortal(
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1050 }} tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content custom-card border-0 shadow">
@@ -556,7 +574,8 @@ const Catalog = () => {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
