@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../services/api';
 
 const AdminGameRequests = () => {
@@ -33,6 +34,14 @@ const AdminGameRequests = () => {
 
   useEffect(() => {
     fetchRequests();
+
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setSelectedRequest(null);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, [statusFilter]);
 
   const openReviewModal = async (req) => {
@@ -267,7 +276,7 @@ const AdminGameRequests = () => {
       </div>
 
       {/* Review Modal */}
-      {selectedRequest && (
+      {selectedRequest && createPortal(
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1050 }} tabIndex="-1">
           <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content custom-card border-0 shadow">
@@ -439,7 +448,8 @@ const AdminGameRequests = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -12,6 +12,7 @@ public class DeveloperDto
     public DateTimeOffset? FoundedDate { get; set; }
     public string? Description { get; set; }
     public string? Logo { get; set; }
+    public int GamesCount { get; set; }
 }
 
 public class CreateDeveloperDto
@@ -39,6 +40,7 @@ public class PublisherDto
     public DateTimeOffset? FoundedDate { get; set; }
     public string? Description { get; set; }
     public string? Logo { get; set; }
+    public int GamesCount { get; set; }
 }
 
 public class CreatePublisherDto
@@ -65,6 +67,7 @@ public class PlatformDto
     public DateTimeOffset? ReleaseDate { get; set; }
     public int? Generation { get; set; }
     public string? Notes { get; set; }
+    public int GamesCount { get; set; }
 }
 
 public class CreatePlatformDto
@@ -88,6 +91,7 @@ public class DigitalServiceDto
     public string Name { get; set; } = null!;
     public string? Website { get; set; }
     public string? Notes { get; set; }
+    public int GamesCount { get; set; }
 }
 
 public class CreateDigitalServiceDto
@@ -108,6 +112,7 @@ public class GenreDto
     public int Id { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
+    public int GamesCount { get; set; }
 }
 
 public class CreateGenreDto
@@ -126,6 +131,7 @@ public class TagDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = null!;
+    public int GamesCount { get; set; }
 }
 
 public class CreateTagDto
@@ -144,6 +150,7 @@ public class ThemeDto
     public int Id { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
+    public int GamesCount { get; set; }
 }
 
 public class CreateThemeDto
@@ -163,6 +170,7 @@ public class FranchiseDto
     public int Id { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
+    public int GamesCount { get; set; }
 }
 
 public class CreateFranchiseDto
@@ -182,6 +190,7 @@ public class SeriesDto
     public int Id { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
+    public int GamesCount { get; set; }
 }
 
 public class CreateSeriesDto

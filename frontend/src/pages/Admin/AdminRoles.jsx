@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../services/api';
 
 const AdminRoles = () => {
@@ -44,6 +45,15 @@ const AdminRoles = () => {
 
   useEffect(() => {
     fetchRolesAndPermissions();
+
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setShowModal(false);
+        setRoleToDelete(null);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
   const openCreateModal = () => {
@@ -292,7 +302,7 @@ const AdminRoles = () => {
       </div>
 
       {/* Create / Edit Modal */}
-      {showModal && (
+      {showModal && createPortal(
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1050 }} tabIndex="-1">
           <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content custom-card border-0 shadow">
@@ -445,11 +455,12 @@ const AdminRoles = () => {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete Confirmation Modal */}
-      {roleToDelete && (
+      {roleToDelete && createPortal(
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1060 }} tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content custom-card border-0 shadow">
@@ -478,7 +489,8 @@ const AdminRoles = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

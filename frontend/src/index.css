@@ -849,3 +849,26 @@ code {
   filter: invert(1) grayscale(100%) brightness(200%);
 }
 
+/* ================================================================
+   CUSTOM CARD & MODAL FIXES
+================================================================ */
+.custom-card {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+.modal-content {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+.modal-header, .modal-footer {
+  border-color: var(--border-color) !important;
+}
+.modal-title, .modal-body {
+  color: var(--text-primary) !important;
+}
+.modal-body {
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+

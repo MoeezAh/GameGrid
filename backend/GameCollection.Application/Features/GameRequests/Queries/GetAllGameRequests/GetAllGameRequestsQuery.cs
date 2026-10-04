@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using GameCollection.Application.DTOs.GameRequest;
 using GameCollection.Domain.Entities;
 using GameCollection.Domain.Enums;
@@ -35,9 +34,10 @@ public class GetAllGameRequestsQueryHandler : IRequestHandler<GetAllGameRequests
             query = query.Where(r => r.Status == request.Status.Value);
         }
 
-        return await query
+        var entities = await query
             .OrderByDescending(r => r.CreatedDate)
-            .ProjectTo<GameRequestDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
+
+        return _mapper.Map<List<GameRequestDto>>(entities);
     }
 }

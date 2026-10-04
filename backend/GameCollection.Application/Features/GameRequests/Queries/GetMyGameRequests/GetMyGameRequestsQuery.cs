@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using GameCollection.Application.DTOs.GameRequest;
 using GameCollection.Domain.Entities;
 using GameCollection.Domain.Interfaces;
@@ -27,10 +26,11 @@ public class GetMyGameRequestsQueryHandler : IRequestHandler<GetMyGameRequestsQu
 
     public async Task<List<GameRequestDto>> Handle(GetMyGameRequestsQuery request, CancellationToken cancellationToken)
     {
-        return await _unitOfWork.Repository<GameRequest>().GetQueryable()
+        var entities = await _unitOfWork.Repository<GameRequest>().GetQueryable()
             .Where(r => r.RequestedByUserId == request.UserId)
             .OrderByDescending(r => r.CreatedDate)
-            .ProjectTo<GameRequestDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
+
+        return _mapper.Map<List<GameRequestDto>>(entities);
     }
 }

@@ -16,47 +16,65 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         // Developer Mappings
-        CreateMap<Developer, DeveloperDto>().ReverseMap();
+        CreateMap<Developer, DeveloperDto>()
+            .ForMember(dest => dest.GamesCount, opt => opt.MapFrom(src => src.Games.Count));
+        CreateMap<DeveloperDto, Developer>();
         CreateMap<CreateDeveloperDto, Developer>();
         CreateMap<UpdateDeveloperDto, Developer>();
 
         // Publisher Mappings
-        CreateMap<Publisher, PublisherDto>().ReverseMap();
+        CreateMap<Publisher, PublisherDto>()
+            .ForMember(dest => dest.GamesCount, opt => opt.MapFrom(src => src.Games.Count));
+        CreateMap<PublisherDto, Publisher>();
         CreateMap<CreatePublisherDto, Publisher>();
         CreateMap<UpdatePublisherDto, Publisher>();
 
         // Platform Mappings
-        CreateMap<Platform, PlatformDto>().ReverseMap();
+        CreateMap<Platform, PlatformDto>()
+            .ForMember(dest => dest.GamesCount, opt => opt.MapFrom(src => src.Games.Count));
+        CreateMap<PlatformDto, Platform>();
         CreateMap<CreatePlatformDto, Platform>();
         CreateMap<UpdatePlatformDto, Platform>();
 
         // DigitalService Mappings
-        CreateMap<DigitalService, DigitalServiceDto>().ReverseMap();
+        CreateMap<DigitalService, DigitalServiceDto>()
+            .ForMember(dest => dest.GamesCount, opt => opt.MapFrom(src => src.Games.Count));
+        CreateMap<DigitalServiceDto, DigitalService>();
         CreateMap<CreateDigitalServiceDto, DigitalService>();
         CreateMap<UpdateDigitalServiceDto, DigitalService>();
 
         // Genre Mappings
-        CreateMap<Genre, GenreDto>().ReverseMap();
+        CreateMap<Genre, GenreDto>()
+            .ForMember(dest => dest.GamesCount, opt => opt.MapFrom(src => src.Games.Count));
+        CreateMap<GenreDto, Genre>();
         CreateMap<CreateGenreDto, Genre>();
         CreateMap<UpdateGenreDto, Genre>();
 
         // Tag Mappings
-        CreateMap<Tag, TagDto>().ReverseMap();
+        CreateMap<Tag, TagDto>()
+            .ForMember(dest => dest.GamesCount, opt => opt.MapFrom(src => src.Games.Count));
+        CreateMap<TagDto, Tag>();
         CreateMap<CreateTagDto, Tag>();
         CreateMap<UpdateTagDto, Tag>();
 
         // Theme Mappings
-        CreateMap<Theme, ThemeDto>().ReverseMap();
+        CreateMap<Theme, ThemeDto>()
+            .ForMember(dest => dest.GamesCount, opt => opt.MapFrom(src => src.Games.Count));
+        CreateMap<ThemeDto, Theme>();
         CreateMap<CreateThemeDto, Theme>();
         CreateMap<UpdateThemeDto, Theme>();
 
         // Franchise Mappings
-        CreateMap<Franchise, FranchiseDto>().ReverseMap();
+        CreateMap<Franchise, FranchiseDto>()
+            .ForMember(dest => dest.GamesCount, opt => opt.MapFrom(src => src.Games.Count));
+        CreateMap<FranchiseDto, Franchise>();
         CreateMap<CreateFranchiseDto, Franchise>();
         CreateMap<UpdateFranchiseDto, Franchise>();
 
         // Series Mappings
-        CreateMap<Series, SeriesDto>().ReverseMap();
+        CreateMap<Series, SeriesDto>()
+            .ForMember(dest => dest.GamesCount, opt => opt.MapFrom(src => src.Games.Count));
+        CreateMap<SeriesDto, Series>();
         CreateMap<CreateSeriesDto, Series>();
         CreateMap<UpdateSeriesDto, Series>();
 
