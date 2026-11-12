@@ -1,6 +1,0 @@
-@GameCollection.API_HostAddress = http://localhost:5139
-
-GET {{GameCollection.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

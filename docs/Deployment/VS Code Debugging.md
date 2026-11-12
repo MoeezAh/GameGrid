@@ -10,7 +10,7 @@ The repository includes a pre-configured VS Code launch configuration that start
 
 ## Setup
 
-1. Open the repository root (`Antigravity/`) in VS Code
+1. Open the repository root (`GameGrid/`) in VS Code
 2. Ensure you have these VS Code extensions installed:
    - **C# Dev Kit** (or C# extension by Microsoft)
    - **JavaScript Debugger** (built-in)
@@ -44,7 +44,7 @@ This will:
       "name": "API (ASP.NET Core)",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}/backend/GameCollection.API/bin/Debug/net10.0/GameCollection.API.dll",
+      "program": "${workspaceFolder}/backend/GameGrid.API/bin/Debug/net10.0/GameGrid.API.dll",
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_URLS": "https://localhost:7214;http://localhost:5139"

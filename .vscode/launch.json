@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/backend/GameCollection.API/bin/Debug/net8.0/GameCollection.API.dll",
+            "program": "${workspaceFolder}/backend/GameGrid.API/bin/Debug/net10.0/GameGrid.API.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/backend/GameCollection.API",
+            "cwd": "${workspaceFolder}/backend/GameGrid.API",
             "stopAtEntry": false,
             "launchSettingsProfile": "https",
             // Enable launching a web browser when ASP.NET Core starts. For more information: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser

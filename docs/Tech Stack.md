@@ -21,18 +21,18 @@ tags: #tech-stack #frameworks #dependencies
 ### Backend NuGet Packages (key)
 
 ```xml
-<!-- GameCollection.Application -->
+<!-- GameGrid.Application -->
 MediatR
 FluentValidation.AspNetCore
 AutoMapper
 
-<!-- GameCollection.Infrastructure -->
+<!-- GameGrid.Infrastructure -->
 Microsoft.EntityFrameworkCore.SqlServer
 Microsoft.AspNetCore.Identity.EntityFrameworkCore
 Microsoft.AspNetCore.Authentication.JwtBearer
 System.IdentityModel.Tokens.Jwt
 
-<!-- GameCollection.API -->
+<!-- GameGrid.API -->
 Swashbuckle.AspNetCore
 Serilog.AspNetCore
 ```

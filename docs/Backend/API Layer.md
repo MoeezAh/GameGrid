@@ -4,7 +4,7 @@ tags: #backend #api #controllers #middleware #authorization
 
 ## Overview
 
-The API layer (`GameCollection.API`) is the **outermost layer** — it wires everything together and handles HTTP concerns. It contains controllers, middleware, custom authorization handlers, and the `Program.cs` composition root.
+The API layer (`GameGrid.API`) is the **outermost layer** — it wires everything together and handles HTTP concerns. It contains controllers, middleware, custom authorization handlers, and the `Program.cs` composition root.
 
 ---
 

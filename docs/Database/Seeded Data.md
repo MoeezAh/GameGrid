@@ -6,7 +6,7 @@ tags: #database #seeding #defaults #credentials
 
 `GameDbContextSeed.SeedAsync()` runs automatically on every application startup via `Program.cs`. It is **idempotent** — it checks for existing records before inserting and is safe to run multiple times.
 
-**File:** `backend/GameCollection.Infrastructure/Data/GameDbContextSeed.cs`
+**File:** `backend/GameGrid.Infrastructure/Data/GameDbContextSeed.cs`
 
 ---
 
@@ -52,8 +52,8 @@ tags: #database #seeding #defaults #credentials
 
 | Username | Email | Password | Roles |
 |:---|:---|:---|:---|
-| `admin` | `admin@gamecollection.com` | `Admin123!` | Super Admin, Admin |
-| `user` | `user@gamecollection.com` | `User123!` | User |
+| `admin` | `admin@gamegrid.com` | `Admin123!` | Super Admin, Admin |
+| `user` | `user@gamegrid.com` | `User123!` | User |
 
 > [!CAUTION]
 > **Change these passwords immediately** in any non-local/production deployment.
@@ -105,7 +105,7 @@ The seeder includes a small set of example games to demonstrate the catalog:
 To add new seeded taxonomy items or test games, edit `GameDbContextSeed.cs` and re-run the application or run:
 
 ```bash
-dotnet run --project GameCollection.API
+dotnet run --project GameGrid.API
 ```
 
 The seeder will insert only records that don't already exist.

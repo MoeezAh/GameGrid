@@ -8,22 +8,22 @@ GameGrid follows **Clean Architecture** with **Domain-Driven Design (DDD)** prin
 
 ```
 ┌─────────────────────────────────────────────┐
-│              GameCollection.API              │  ← Entry point, HTTP, Auth handlers
+│                 GameGrid.API                │  ← Entry point, HTTP, Auth handlers
 │         (Presentation / API Layer)           │
 └──────────────────────┬──────────────────────┘
                        │ depends on
 ┌──────────────────────▼──────────────────────┐
-│          GameCollection.Infrastructure       │  ← DB, Identity, File Storage
+│             GameGrid.Infrastructure         │  ← DB, Identity, File Storage
 │           (Infrastructure Layer)             │
 └──────────────────────┬──────────────────────┘
                        │ depends on
 ┌──────────────────────▼──────────────────────┐
-│          GameCollection.Application          │  ← CQRS, DTOs, Validators, Mappings
+│             GameGrid.Application            │  ← CQRS, DTOs, Validators, Mappings
 │            (Application Layer)               │
 └──────────────────────┬──────────────────────┘
                        │ depends on
 ┌──────────────────────▼──────────────────────┐
-│            GameCollection.Domain             │  ← Entities, Enums, Interfaces
+│               GameGrid.Domain               │  ← Entities, Enums, Interfaces
 │              (Domain Layer)                  │
 │         *** ZERO external dependencies ***   │
 └─────────────────────────────────────────────┘
@@ -33,7 +33,7 @@ GameGrid follows **Clean Architecture** with **Domain-Driven Design (DDD)** prin
 
 ## Layer Responsibilities
 
-### GameCollection.Domain (Innermost)
+### GameGrid.Domain (Innermost)
 - **Contains:** Domain Entities, Enums, Domain Interfaces (`IRepository<T>`, `IUnitOfWork`)
 - **Rule:** No NuGet packages, no EF Core, no ASP.NET — pure C# models only
 - **Key files:**
@@ -44,7 +44,7 @@ GameGrid follows **Clean Architecture** with **Domain-Driven Design (DDD)** prin
   - `Enums/CompletionStatus.cs`, `GameRequestStatus.cs`
   - `Interfaces/IRepository.cs`, `IUnitOfWork.cs`
 
-### GameCollection.Application
+### GameGrid.Application
 - **Contains:** CQRS Commands & Queries, DTOs, AutoMapper Profiles, FluentValidation Validators, Service Interfaces
 - **Key patterns:**
   - `Features/Games/Commands/` — CreateGame, UpdateGame, DeleteGame
@@ -54,7 +54,7 @@ GameGrid follows **Clean Architecture** with **Domain-Driven Design (DDD)** prin
   - `Mappings/` — AutoMapper profile classes
   - `Common/Interfaces/` — `IIdentityService`, `IPermissionService`, `ICurrentUserService`, `IFileStorageService`
 
-### GameCollection.Infrastructure
+### GameGrid.Infrastructure
 - **Contains:** EF Core `DbContext`, Identity integration, Repository implementations, Migrations, File storage
 - **Key files:**
   - `Data/GameDbContext.cs` — EF Core context with soft-delete global filters
@@ -64,7 +64,7 @@ GameGrid follows **Clean Architecture** with **Domain-Driven Design (DDD)** prin
   - `Identity/PermissionService.cs` — Permission lookup and Super Admin check
   - `Files/LocalFileStorageService.cs` — Handles image/media uploads to `wwwroot/uploads`
 
-### GameCollection.API (Outermost)
+### GameGrid.API (Outermost)
 - **Contains:** Controllers, Middleware, Custom Authorization Handlers, Program.cs
 - **Key files:**
   - `Program.cs` — DI composition root, middleware pipeline, DB migration on startup
@@ -100,7 +100,7 @@ var result = await _mediator.Send(new CreateGameCommand { Title = "...", ... });
 var games = await _mediator.Send(new GetGamesQuery { Page = 1, PageSize = 20 });
 ```
 
-Each handler lives in `GameCollection.Application/Features/<Feature>/Commands/` or `.../Queries/`.
+Each handler lives in `GameGrid.Application/Features/<Feature>/Commands/` or `.../Queries/`.
 
 ---
 

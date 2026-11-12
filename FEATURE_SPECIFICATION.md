@@ -1,16 +1,16 @@
-# Antigravity Game Collection System — Comprehensive Feature & Technical Specification
+# GameGrid Game Collection System — Comprehensive Feature & Technical Specification
 
 ---
 
 ## Executive Summary & High-Level Overview
 
-**Antigravity** is a full-stack, enterprise-grade game collection management platform designed for gamers, collectors, curators, and gaming community administrators. The system decouples the **Authoritative Central Game Catalog** from **Personal User Libraries**, empowering users to track and customize their gaming backlog, playtime, and owned platforms while maintaining a verified central database of video games.
+**GameGrid** is a full-stack, enterprise-grade game collection management platform designed for gamers, collectors, curators, and gaming community administrators. The system decouples the **Authoritative Central Game Catalog** from **Personal User Libraries**, empowering users to track and customize their gaming backlog, playtime, and owned platforms while maintaining a verified central database of video games.
 
 The platform is secured by a dynamic, configurable **Role-Based Access Control (RBAC)** engine where all platform actions are controlled by discrete permissions rather than hardcoded role names.
 
 ```
 +-----------------------------------------------------------------------------------+
-|                               ANTIGRAVITY ECOSYSTEM                               |
+|                                 GAMEGRID ECOSYSTEM                                |
 +-----------------------------------------------------------------------------------+
 |                                                                                   |
 |  +---------------------------+                     +---------------------------+  |

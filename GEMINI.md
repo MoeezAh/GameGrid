@@ -7,7 +7,7 @@
 
 ## Project Identity
 
-- **Project Name:** GameGrid (codename: Antigravity)
+- **Project Name:** GameGrid
 - **Type:** Full-stack web application — Game Collection Management System
 - **Stack:** ASP.NET Core 10 (Clean Architecture) + React 19 + SQL Server
 
@@ -27,10 +27,10 @@
 │   ├── Configuration/
 │   └── Deployment/
 ├── backend/                     ← ASP.NET Core .NET 10 solution
-│   ├── GameCollection.Domain/   ← Entities, Enums, Interfaces (no dependencies)
-│   ├── GameCollection.Application/ ← CQRS (MediatR), DTOs, FluentValidation
-│   ├── GameCollection.Infrastructure/ ← EF Core, Identity, JWT, File Storage
-│   └── GameCollection.API/      ← Controllers, Auth Handlers, Program.cs
+│   ├── GameGrid.Domain/         ← Entities, Enums, Interfaces (no dependencies)
+│   ├── GameGrid.Application/    ← CQRS (MediatR), DTOs, FluentValidation
+│   ├── GameGrid.Infrastructure/ ← EF Core, Identity, JWT, File Storage
+│   └── GameGrid.API/            ← Controllers, Auth Handlers, Program.cs
 ├── frontend/                    ← React 19 + Vite SPA
 │   └── src/
 │       ├── context/AuthContext.jsx  ← Session + permission helpers
@@ -91,13 +91,13 @@
 
 | Question | Answer |
 |:---|:---|
-| All API endpoints | `docs/Backend/API Endpoints.md` or `backend/GameCollection.API/Controllers/` |
+| All API endpoints | `docs/Backend/API Endpoints.md` or `backend/GameGrid.API/Controllers/` |
 | All permissions | `docs/Security/Permission Reference.md` |
 | Database schema | `docs/Database/Entity Relationship Model.md` |
-| CQRS handlers | `backend/GameCollection.Application/Features/` |
+| CQRS handlers | `backend/GameGrid.Application/Features/` |
 | Frontend routes | `frontend/src/App.jsx` |
-| Seeded data | `backend/GameCollection.Infrastructure/Data/GameDbContextSeed.cs` |
-| EF Core context | `backend/GameCollection.Infrastructure/Data/GameDbContext.cs` |
+| Seeded data | `backend/GameGrid.Infrastructure/Data/GameDbContextSeed.cs` |
+| EF Core context | `backend/GameGrid.Infrastructure/Data/GameDbContext.cs` |
 
 ---
 

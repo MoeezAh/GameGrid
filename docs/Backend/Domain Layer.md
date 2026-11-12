@@ -4,7 +4,7 @@ tags: #backend #domain #entities #ddd
 
 ## Overview
 
-The Domain layer (`GameCollection.Domain`) is the **innermost ring** of the Clean Architecture. It has **zero external dependencies** — no NuGet packages, no framework references, just pure C# models.
+The Domain layer (`GameGrid.Domain`) is the **innermost ring** of the Clean Architecture. It has **zero external dependencies** — no NuGet packages, no framework references, just pure C# models.
 
 ---
 

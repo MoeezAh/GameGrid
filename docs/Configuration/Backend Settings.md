@@ -4,7 +4,7 @@ tags: #configuration #backend #appsettings
 
 ## `appsettings.json` — Full Reference
 
-**File:** `backend/GameCollection.API/appsettings.json`
+**File:** `backend/GameGrid.API/appsettings.json`
 
 ```json
 {
@@ -19,12 +19,12 @@ tags: #configuration #backend #appsettings
     "AllowedOrigins": "http://localhost:5173"
   },
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=GameCollectionDb;Trusted_Connection=True;MultipleActiveResultSets=true"
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=GameGridDb;Trusted_Connection=True;MultipleActiveResultSets=true"
   },
   "JwtSettings": {
-    "Secret": "SuperSecretKeyForGameCollectionManagementAppKeyHere_1234567890!",
-    "Issuer": "GameCollectionAPI",
-    "Audience": "GameCollectionApp",
+    "Secret": "SuperSecretKeyForGameGridManagementAppKeyHere_1234567890!",
+    "Issuer": "GameGridAPI",
+    "Audience": "GameGridApp",
     "DurationInMinutes": 1440
   }
 }
@@ -39,8 +39,8 @@ tags: #configuration #backend #appsettings
 | `CorsSettings:AllowedOrigins` | `http://localhost:5173` | Comma-separated list of allowed frontend origins. E.g. for Docker: `http://localhost` |
 | `ConnectionStrings:DefaultConnection` | LocalDB string | SQL Server connection string |
 | `JwtSettings:Secret` | `SuperSecretKey...` | HMAC-SHA256 signing key. **Must be 32+ characters.** |
-| `JwtSettings:Issuer` | `GameCollectionAPI` | JWT `iss` claim |
-| `JwtSettings:Audience` | `GameCollectionApp` | JWT `aud` claim |
+| `JwtSettings:Issuer` | `GameGridAPI` | JWT `iss` claim |
+| `JwtSettings:Audience` | `GameGridApp` | JWT `aud` claim |
 | `JwtSettings:DurationInMinutes` | `1440` | Token lifetime — 1440 min = 24 hours |
 | `Logging:LogLevel:Default` | `Information` | Minimum log level for application code |
 | `Logging:LogLevel:Microsoft.AspNetCore` | `Warning` | Reduces framework noise |
@@ -70,10 +70,10 @@ When using Docker Compose, settings are passed as environment variables using do
 ```yaml
 environment:
   - ASPNETCORE_ENVIRONMENT=Development
-  - ConnectionStrings__DefaultConnection=Server=database;Database=GameCollectionDb;User Id=sa;Password=...
+  - ConnectionStrings__DefaultConnection=Server=database;Database=GameGridDb;User Id=sa;Password=...
   - JwtSettings__Secret=SuperSecretKeyHere
-  - JwtSettings__Issuer=GameCollectionAPI
-  - JwtSettings__Audience=GameCollectionApp
+  - JwtSettings__Issuer=GameGridAPI
+  - JwtSettings__Audience=GameGridApp
   - JwtSettings__DurationInMinutes=1440
 ```
 

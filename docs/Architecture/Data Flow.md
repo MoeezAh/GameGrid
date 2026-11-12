@@ -11,7 +11,7 @@ Browser (React)
   │
   │  1. Axios adds "Authorization: Bearer <JWT>" header via interceptor
   ▼
-ASP.NET Core Pipeline (GameCollection.API)
+ASP.NET Core Pipeline (GameGrid.API)
   │
   │  2. Serilog logs the incoming request
   │  3. ApiExceptionMiddleware wraps the handler in try/catch
