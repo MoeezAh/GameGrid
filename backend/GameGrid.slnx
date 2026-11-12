@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="GameGrid.API/GameGrid.API.csproj" />
+  <Project Path="GameGrid.Application/GameGrid.Application.csproj" />
+  <Project Path="GameGrid.Domain/GameGrid.Domain.csproj" />
+  <Project Path="GameGrid.Infrastructure/GameGrid.Infrastructure.csproj" />
+</Solution>

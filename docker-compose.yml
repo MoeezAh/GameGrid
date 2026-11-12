@@ -3,7 +3,7 @@ version: '3.8'
 services:
   database:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: gamecollection-db
+    container_name: gamegrid-db
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=SuperSecurePassword123!
@@ -13,19 +13,19 @@ services:
       - mssql-data:/var/opt/mssql
 
   backend-api:
-    image: gamecollection-api
+    image: gamegrid-api
     build:
       context: ./backend
-      dockerfile: GameCollection.API/Dockerfile
-    container_name: gamecollection-backend
+      dockerfile: GameGrid.API/Dockerfile
+    container_name: gamegrid-backend
     ports:
       - "5000:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=database;Database=GameCollectionDb;User Id=sa;Password=SuperSecurePassword123!;TrustServerCertificate=True;MultipleActiveResultSets=true
-      - JwtSettings__Secret=SuperSecretKeyForGameCollectionManagementAppKeyHere_1234567890!
-      - JwtSettings__Issuer=GameCollectionAPI
-      - JwtSettings__Audience=GameCollectionApp
+      - ConnectionStrings__DefaultConnection=Server=database;Database=GameGridDb;User Id=sa;Password=SuperSecurePassword123!;TrustServerCertificate=True;MultipleActiveResultSets=true
+      - JwtSettings__Secret=SuperSecretKeyForGameGridManagementAppKeyHere_1234567890!
+      - JwtSettings__Issuer=GameGridAPI
+      - JwtSettings__Audience=GameGridApp
       - JwtSettings__DurationInMinutes=1440
     depends_on:
       - database
@@ -33,11 +33,11 @@ services:
       - backend-uploads:/app/wwwroot/uploads
 
   frontend-app:
-    image: gamecollection-frontend
+    image: gamegrid-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: gamecollection-frontend
+    container_name: gamegrid-frontend
     ports:
       - "80:80"
     depends_on:

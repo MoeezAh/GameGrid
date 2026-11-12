@@ -65,7 +65,7 @@ const Layout = () => {
         <div className="sidebar-header">
           <div className="sidebar-logo">
             <i className="bi bi-controller"></i>
-            <span className="h4 mb-0 fw-bold display-font logo-name">ANTIGRAVITY</span>
+            <span className="h4 mb-0 fw-bold display-font logo-name">GAMEGRID</span>
           </div>
         </div>
 

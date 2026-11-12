@@ -22,8 +22,8 @@ GameGrid uses **stateless JWT Bearer authentication**. No server-side sessions a
     "roles": ["Admin", "User"],         // all assigned role names
     "permissions": ["Games.View", "Libraries.Manage", ...],  // aggregated permissions
     "isSuperAdmin": true/false,
-    "iss": "GameCollectionAPI",
-    "aud": "GameCollectionApp",
+    "iss": "GameGridAPI",
+    "aud": "GameGridApp",
     "exp": <unix timestamp>
   }
 }
@@ -36,9 +36,9 @@ GameGrid uses **stateless JWT Bearer authentication**. No server-side sessions a
 ```json
 {
   "JwtSettings": {
-    "Secret": "SuperSecretKeyForGameCollectionManagementAppKeyHere_1234567890!",
-    "Issuer": "GameCollectionAPI",
-    "Audience": "GameCollectionApp",
+    "Secret": "SuperSecretKeyForGameGridManagementAppKeyHere_1234567890!",
+    "Issuer": "GameGridAPI",
+    "Audience": "GameGridApp",
     "DurationInMinutes": 1440
   }
 }
@@ -84,7 +84,7 @@ Body: { "username": "newuser", "email": "...", "password": "..." }
 
 ## Token Validation (API Side)
 
-Configured in `GameCollection.Infrastructure/ConfigureServices.cs`:
+Configured in `GameGrid.Infrastructure/ConfigureServices.cs`:
 
 ```csharp
 options.TokenValidationParameters = new TokenValidationParameters

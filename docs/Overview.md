@@ -2,9 +2,9 @@
 
 tags: #overview #introduction
 
-## What is GameGrid (Antigravity)?
+## What is GameGrid?
 
-**Antigravity** (project codename: **GameGrid**) is a complete, production-ready, full-stack game collection manager. It is designed for gamers, collectors, curators, and gaming community administrators who want a self-hosted, privacy-first alternative to platforms like Backloggery, IGDB, or the library management features of Steam/GOG Galaxy.
+**GameGrid** is a complete, production-ready, full-stack game collection manager. It is designed for gamers, collectors, curators, and gaming community administrators who want a self-hosted, privacy-first alternative to platforms like Backloggery, IGDB, or the library management features of Steam/GOG Galaxy.
 
 The visual design draws inspiration from premium modern gaming launchers — Steam, GOG Galaxy, and the Xbox App — featuring a dark-themed, glassmorphic UI with vibrant HSL colour accents.
 
@@ -14,7 +14,7 @@ The visual design draws inspiration from premium modern gaming launchers — Ste
 
 ```
 +-----------------------------------------------------------------------------------+
-|                               ANTIGRAVITY ECOSYSTEM                               |
+|                                 GAMEGRID ECOSYSTEM                                |
 +-----------------------------------------------------------------------------------+
 |                                                                                   |
 |  +---------------------------+                     +---------------------------+  |

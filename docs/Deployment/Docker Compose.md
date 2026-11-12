@@ -14,21 +14,21 @@ Docker Compose deploys the **entire stack** — SQL Server database, ASP.NET Cor
 
 | Service | Container Name | Image | Port Mapping |
 |:---|:---|:---|:---|
-| `database` | `gamecollection-db` | `mcr.microsoft.com/mssql/server:2022-latest` | `1433:1433` |
-| `backend-api` | `gamecollection-backend` | `gamecollection-api` (built locally) | `5000:80` |
-| `frontend-app` | `gamecollection-frontend` | `gamecollection-frontend` (built locally) | `80:80` |
+| `database` | `gamegrid-db` | `mcr.microsoft.com/mssql/server:2022-latest` | `1433:1433` |
+| `backend-api` | `gamegrid-backend` | `gamegrid-api` (built locally) | `5000:80` |
+| `frontend-app` | `gamegrid-frontend` | `gamegrid-frontend` (built locally) | `80:80` |
 
 ---
 
 ## Quick Start
 
 ```bash
-# From the repository root (Antigravity/):
+# From the repository root (GameGrid/):
 docker-compose up --build -d
 ```
 
 This command:
-1. Builds the API image from `backend/GameCollection.API/Dockerfile`
+1. Builds the API image from `backend/GameGrid.API/Dockerfile`
 2. Builds the frontend image from `frontend/Dockerfile`
 3. Pulls the SQL Server 2022 image
 4. Creates and starts all containers in dependency order:
@@ -59,7 +59,7 @@ version: '3.8'
 services:
   database:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: gamecollection-db
+    container_name: gamegrid-db
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=SuperSecurePassword123!
@@ -69,19 +69,19 @@ services:
       - mssql-data:/var/opt/mssql      # Persistent DB storage
 
   backend-api:
-    image: gamecollection-api
+    image: gamegrid-api
     build:
       context: ./backend
-      dockerfile: GameCollection.API/Dockerfile
-    container_name: gamecollection-backend
+      dockerfile: GameGrid.API/Dockerfile
+    container_name: gamegrid-backend
     ports:
       - "5000:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=database;Database=GameCollectionDb;User Id=sa;Password=SuperSecurePassword123!;TrustServerCertificate=True;MultipleActiveResultSets=true
-      - JwtSettings__Secret=SuperSecretKeyForGameCollectionManagementAppKeyHere_1234567890!
-      - JwtSettings__Issuer=GameCollectionAPI
-      - JwtSettings__Audience=GameCollectionApp
+      - ConnectionStrings__DefaultConnection=Server=database;Database=GameGridDb;User Id=sa;Password=SuperSecurePassword123!;TrustServerCertificate=True;MultipleActiveResultSets=true
+      - JwtSettings__Secret=SuperSecretKeyForGameGridManagementAppKeyHere_1234567890!
+      - JwtSettings__Issuer=GameGridAPI
+      - JwtSettings__Audience=GameGridApp
       - JwtSettings__DurationInMinutes=1440
     depends_on:
       - database
@@ -89,11 +89,11 @@ services:
       - backend-uploads:/app/wwwroot/uploads  # Persistent file uploads
 
   frontend-app:
-    image: gamecollection-frontend
+    image: gamegrid-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: gamecollection-frontend
+    container_name: gamegrid-frontend
     ports:
       - "80:80"
     depends_on:
@@ -108,7 +108,7 @@ volumes:
 
 ## API Dockerfile
 
-**File:** `backend/GameCollection.API/Dockerfile`
+**File:** `backend/GameGrid.API/Dockerfile`
 
 Multi-stage build:
 1. **Build stage** — `dotnet restore`, `dotnet build`, `dotnet publish`
@@ -121,7 +121,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 RUN dotnet restore ...
 RUN dotnet publish -c Release -o /app/publish ...
 # ...
-ENTRYPOINT ["dotnet", "GameCollection.API.dll"]
+ENTRYPOINT ["dotnet", "GameGrid.API.dll"]
 ```
 
 ---

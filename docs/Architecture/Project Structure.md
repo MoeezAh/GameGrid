@@ -5,7 +5,7 @@ tags: #architecture #project-structure #file-layout
 ## Repository Root
 
 ```
-Antigravity/
+GameGrid/
 ├── docs/                          ← 📖 This Obsidian vault
 ├── backend/                       ← ASP.NET Core solution
 ├── frontend/                      ← React SPA
@@ -21,9 +21,9 @@ Antigravity/
 
 ```
 backend/
-└── GameCollection.slnx            ← Modern XML solution file
+└── GameGrid.slnx                  ← Modern XML solution file
 
-GameCollection.Domain/
+GameGrid.Domain/
 ├── Entities/
 │   ├── Game.cs                    ← Central catalog game entity
 │   ├── UserLibraryEntry.cs        ← Personal library entry
@@ -50,7 +50,7 @@ GameCollection.Domain/
 └── Common/
     └── BaseAuditableEntity.cs     ← Id, CreatedAt, UpdatedAt, IsDeleted
 
-GameCollection.Application/
+GameGrid.Application/
 ├── Features/
 │   ├── Games/
 │   │   ├── Commands/              ← CreateGame, UpdateGame, DeleteGame
@@ -77,7 +77,7 @@ GameCollection.Application/
 │   └── Security/                  ← PermissionConstants
 └── ConfigureServices.cs           ← Application layer DI registration
 
-GameCollection.Infrastructure/
+GameGrid.Infrastructure/
 ├── Data/
 │   ├── GameDbContext.cs           ← EF Core context, soft-delete filters
 │   └── GameDbContextSeed.cs       ← Seed: roles, permissions, admin/user accounts
@@ -92,7 +92,7 @@ GameCollection.Infrastructure/
 ├── Migrations/                    ← EF Core generated migration files
 └── ConfigureServices.cs           ← Infrastructure DI registration
 
-GameCollection.API/
+GameGrid.API/
 ├── Controllers/
 │   ├── AuthController.cs
 │   ├── GamesController.cs

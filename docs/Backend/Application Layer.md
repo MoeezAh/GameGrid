@@ -4,7 +4,7 @@ tags: #backend #application #cqrs #mediator #dtos
 
 ## Overview
 
-The Application layer (`GameCollection.Application`) contains all **business orchestration logic** — CQRS handlers, DTOs, validation, and AutoMapper profiles. It references only the Domain layer.
+The Application layer (`GameGrid.Application`) contains all **business orchestration logic** — CQRS handlers, DTOs, validation, and AutoMapper profiles. It references only the Domain layer.
 
 ---
 
@@ -162,7 +162,7 @@ These interfaces are defined in Application and implemented in Infrastructure �
 ## DI Registration
 
 ```csharp
-// GameCollection.Application/ConfigureServices.cs
+// GameGrid.Application/ConfigureServices.cs
 public static IServiceCollection AddApplicationServices(this IServiceCollection services)
 {
     services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));

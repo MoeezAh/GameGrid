@@ -1,6 +1,6 @@
 # 🎮 GameGrid — Documentation Vault
 
-> **Antigravity** is a full-stack, enterprise-grade game collection management platform built with ASP.NET Core 10 and React 19.
+> **GameGrid** is a full-stack, enterprise-grade game collection management platform built with ASP.NET Core 10 and React 19.
 
 ---
 
@@ -56,7 +56,7 @@
 |:---|:---|
 | Feature Specification | `../FEATURE_SPECIFICATION.md` |
 | README | `../README.md` |
-| Backend Solution | `../backend/GameCollection.slnx` |
+| Backend Solution | `../backend/GameGrid.slnx` |
 | Frontend Entry | `../frontend/src/App.jsx` |
 | Docker Compose | `../docker-compose.yml` |
 

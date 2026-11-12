@@ -4,7 +4,7 @@ tags: #backend #infrastructure #efcore #identity #database
 
 ## Overview
 
-The Infrastructure layer (`GameCollection.Infrastructure`) implements all external concerns: database access via EF Core, ASP.NET Identity, JWT generation, and local file storage.
+The Infrastructure layer (`GameGrid.Infrastructure`) implements all external concerns: database access via EF Core, ASP.NET Identity, JWT generation, and local file storage.
 
 ---
 
@@ -176,7 +176,7 @@ public class LocalFileStorageService : IFileStorageService
 ## DI Registration
 
 ```csharp
-// GameCollection.Infrastructure/ConfigureServices.cs
+// GameGrid.Infrastructure/ConfigureServices.cs
 services.AddDbContext<GameDbContext>(...);
 services.AddIdentity<IdentityUser, IdentityRole>(...).AddEntityFrameworkStores<GameDbContext>();
 services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
@@ -194,12 +194,12 @@ services.AddScoped<IFileStorageService, LocalFileStorageService>();
 ```bash
 # From repository root, run in backend/ directory:
 dotnet ef migrations add <MigrationName> \
-  --project GameCollection.Infrastructure \
-  --startup-project GameCollection.API
+  --project GameGrid.Infrastructure \
+  --startup-project GameGrid.API
 
 dotnet ef database update \
-  --project GameCollection.Infrastructure \
-  --startup-project GameCollection.API
+  --project GameGrid.Infrastructure \
+  --startup-project GameGrid.API
 ```
 
 > [!TIP]

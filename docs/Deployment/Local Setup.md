@@ -17,7 +17,7 @@ tags: #deployment #setup #local #development
 
 ```bash
 git clone <repository-url>
-cd Antigravity
+cd GameGrid
 ```
 
 ---
@@ -30,19 +30,19 @@ Open a terminal in the `backend/` directory.
 
 ```bash
 dotnet ef database update \
-  --project GameCollection.Infrastructure \
-  --startup-project GameCollection.API
+  --project GameGrid.Infrastructure \
+  --startup-project GameGrid.API
 ```
 
 This will:
-- Create the `GameCollectionDb` SQL Server database (LocalDB by default)
+- Create the `GameGridDb` SQL Server database (LocalDB by default)
 - Run all EF Core migrations
 - **Automatically seed** default permissions, roles, and users on first run
 
 ### 2b. Run the API
 
 ```bash
-dotnet run --project GameCollection.API
+dotnet run --project GameGrid.API
 ```
 
 ### 2c. Verify

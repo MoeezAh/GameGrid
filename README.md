@@ -1,6 +1,6 @@
-# Antigravity Game Collection Management System
+# GameGrid — Game Collection Management System
 
-Antigravity is a complete, production-ready, full-stack game collection manager. The application features a premium dark-themed visual layout inspired by modern launchers like Steam, GOG Galaxy, and Xbox App, and provides users with powerful tools to catalog their library, track play hours, manage storefront connections, and view collection statistics charts.
+GameGrid is a complete, production-ready, full-stack game collection manager. The application features a premium dark-themed visual layout inspired by modern launchers like Steam, GOG Galaxy, and Xbox App, and provides users with powerful tools to catalog their library, track play hours, manage storefront connections, and view collection statistics charts.
 
 > [!TIP]
 > 📖 **Comprehensive System & Feature Documentation**
@@ -49,11 +49,11 @@ Antigravity is a complete, production-ready, full-stack game collection manager.
 ```
 ├── FEATURE_SPECIFICATION.md              # Detailed technical & feature specification document
 ├── backend/                              # ASP.NET Core Solution
-│   ├── GameCollection.slnx               # Modern XML Solution format
-│   ├── GameCollection.Domain/            # Domain Entities, RBAC models, Enums, Interfaces
-│   ├── GameCollection.Application/       # DTOs, Mappings, CQRS Commands/Queries, Security
-│   ├── GameCollection.Infrastructure/    # DBContext, Identity, PermissionService, Migrations
-│   └── GameCollection.API/               # Controllers, Middlewares, Dynamic Auth Handlers
+│   ├── GameGrid.slnx                     # Modern XML Solution format
+│   ├── GameGrid.Domain/                  # Domain Entities, RBAC models, Enums, Interfaces
+│   ├── GameGrid.Application/             # DTOs, Mappings, CQRS Commands/Queries, Security
+│   ├── GameGrid.Infrastructure/          # DBContext, Identity, PermissionService, Migrations
+│   └── GameGrid.API/                     # Controllers, Middlewares, Dynamic Auth Handlers
 │
 └── frontend/                             # React SPA Client
     ├── public/                           # Static assets
@@ -83,11 +83,11 @@ Antigravity is a complete, production-ready, full-stack game collection manager.
 1. Open a terminal in `backend/`.
 2. Generate migrations and update database (automatically seeds default tables):
    ```bash
-   dotnet ef database update --project GameCollection.Infrastructure --startup-project GameCollection.API
+   dotnet ef database update --project GameGrid.Infrastructure --startup-project GameGrid.API
    ```
 3. Run the API:
    ```bash
-   dotnet run --project GameCollection.API
+   dotnet run --project GameGrid.API
    ```
 4. Confirm backend Swagger UI is visible at:
    - HTTP:  `http://localhost:5139/swagger`
@@ -155,8 +155,8 @@ All runtime settings are externalized — **no hardcoded values**. Modify the fo
 | `CorsSettings:AllowedOrigins` | `http://localhost:5173` | Comma-separated list of allowed frontend origins for CORS |
 | `ConnectionStrings:DefaultConnection` | LocalDB connection string | SQL Server connection string |
 | `JwtSettings:Secret` | (see appsettings) | HMAC-SHA256 signing key for JWT tokens |
-| `JwtSettings:Issuer` | `GameCollectionAPI` | JWT token issuer claim |
-| `JwtSettings:Audience` | `GameCollectionApp` | JWT token audience claim |
+| `JwtSettings:Issuer` | `GameGridAPI` | JWT token issuer claim |
+| `JwtSettings:Audience` | `GameGridApp` | JWT token audience claim |
 | `JwtSettings:DurationInMinutes` | `1440` | Token expiration time (24 hours) |
 
 ### Frontend (`.env` / Environment Variables)
